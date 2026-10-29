@@ -1,8 +1,0 @@
-{
-	"appId": "bg.ngerchev.mama",
-	"appName": "MAMA",
-	"webDir": "www",
-	"android": {
-		"backgroundColor": "#0e7a5c"
-	}
-}
