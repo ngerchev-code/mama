@@ -421,3 +421,13 @@ label.btn { cursor: pointer; }
 @keyframes spLeaf { 0% { transform: scale(0) rotate(-30deg); } 60% { transform: scale(1.12) rotate(6deg); } 100% { transform: none; } }
 @keyframes spGlow { 0%,100% { opacity: .2; } 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { #splash * { animation: none !important; stroke-dashoffset: 0 !important; opacity: 1 !important; } }
+
+/* ═══ eBag ═══ */
+.card.ebag { background: linear-gradient(135deg, #5f9e00, #2f8f3a); color: #fff; border: 0; }
+.card.ebag h2 { color: #fff; font-size: 17px; }
+.card.ebag .ebag-logo { background: #fff; color: #4a8a00; font-weight: 900; font-size: 13px; padding: 4px 10px; border-radius: 999px; flex: none; }
+.card.ebag .ebag-lbl { font-weight: 800; margin: 8px 0 6px; opacity: .95; }
+.card.ebag .chip { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); color: #fff; }
+.card.ebag .ebag-btn { background: #fff; color: #1f3d10; border: 0; font-weight: 800; }
+.card.ebag .ebag-ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.7); font-weight: 700; }
+.card.ebag-mini { align-items: center; gap: 10px; border-left: 0; background: linear-gradient(120deg, #eef8e3, #f6fbef); }
