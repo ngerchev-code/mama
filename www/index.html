@@ -45,6 +45,8 @@
     <section class="screen" id="s-settings"></section>
     <section class="screen" id="s-doctor"></section>
     <section class="screen" id="s-world"></section>
+    <section class="screen" id="s-calendar"></section>
+    <section class="screen" id="s-scan"></section>
   </main>
 
   <nav class="bottom" id="nav">
@@ -64,6 +66,9 @@
   <script src="doctor.js"></script>
   <script src="world.js"></script>
   <script src="guide.js"></script>
+  <script src="holidays.js"></script>
+  <script src="vendor/zxing.min.js"></script>
+  <script src="scanner.js"></script>
   <script src="update.js"></script>
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:' && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {

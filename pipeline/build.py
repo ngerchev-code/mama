@@ -104,7 +104,38 @@ NEWS_QUERIES = [  # (група в приложението, заявка към
     ("recall", "Изтеглени и опасни храни", "изтеглени от пазара храни БАБХ"),
     ("recall", "Изтеглени и опасни храни", "опасни храни RASFF България"),
     ("platform", "Колко струва", "kolkostruva Колко струва портал"),
+    ("labels", "Етикети и добавки", "Е-добавки етикет състав храни"),
 ]
+
+HOLIDAYS_FIXED = {  # ММ-ДД: име за търсене на новини
+    "01-01": "Нова година трапеза", "01-06": "Йордановден", "01-07": "Ивановден", "02-14": "Трифон Зарезан",
+    "03-01": "Баба Марта", "03-03": "3 март празник", "05-06": "Гергьовден агнешко", "05-24": "24 май",
+    "06-24": "Еньовден билки", "08-15": "Голяма Богородица", "09-06": "Съединението", "09-22": "Независимостта",
+    "10-26": "Димитровден", "11-08": "Архангеловден", "11-30": "Андреевден", "12-06": "Никулден риба",
+    "12-20": "Игнажден", "12-24": "Бъдни вечер постни ястия", "12-25": "Коледа трапеза", "12-31": "Нова година трапеза",
+}
+HOLIDAYS_EASTER = {-49: "Сирни заговезни", -7: "Цветница", -3: "Великден козунак яйца", 0: "Великден трапеза", 39: "Спасовден"}
+
+
+def orthodox_easter(y: int) -> date:
+    a, b, c = y % 4, y % 7, y % 19
+    d = (19 * c + 15) % 30
+    e = (2 * a + 4 * b - d + 34) % 7
+    m, dd = (d + e + 114) // 31, (d + e + 114) % 31 + 1
+    return date(y, m, dd) + timedelta(days=13)
+
+
+def holiday_queries(today: date, ahead: int = 4) -> list[tuple[str, str, str]]:
+    out = []
+    for k in range(ahead + 1):
+        d = today + timedelta(days=k)
+        name = HOLIDAYS_FIXED.get(d.strftime("%m-%d"))
+        if not name:
+            off = (d - orthodox_easter(d.year)).days
+            name = HOLIDAYS_EASTER.get(off)
+        if name:
+            out.append(("holiday", "Празници", name))
+    return out[:2]
 
 
 def log(*a):
@@ -412,7 +443,7 @@ def build_history(prev: Path | None, zips: Path, days_with_data: list[date], out
 
 def build_news(out: Path, prev: Path | None):
     items, seen = [], set()
-    for gid, gname, q in NEWS_QUERIES:
+    for gid, gname, q in NEWS_QUERIES + holiday_queries(datetime.now(timezone.utc).date()):
         url = f"https://news.google.com/rss/search?q={quote(q)}&hl=bg&gl=BG&ceid=BG:bg"
         try:
             root = ET.fromstring(http_get(url, timeout=30))
