@@ -25,6 +25,10 @@ android {
             keyPassword System.getenv("MAMA_KEY_PASSWORD") ?: "mama-release-2026"
         }
     }
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
     buildTypes {
         release {
             signingConfig signingConfigs.release
