@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0e7a5c">
+  <meta name="theme-color" content="#10233a">
   <title>MAMA — My Amazing Market Area</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -15,12 +15,18 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div id="splash" aria-hidden="true">
+    <svg viewBox="0 0 120 120" width="150" height="150"><circle class="sp-glow" cx="60" cy="78" r="34" fill="#2ed49a"/><path d="M32 56 C32 24, 88 24, 88 56" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><g class="sp-leaf"><path d="M60 52 C56 40, 63 30, 76 28 C78 40, 70 49, 60 52 Z" fill="#b6f36a"/></g><path d="M22 56 H98 L90 96 C89 100, 86 102, 82 102 H38 C34 102, 31 100, 30 96 Z" fill="#2ed49a"/><rect x="18" y="51" width="84" height="10" rx="5" fill="#6ff0c2"/><path class="sp-line" pathLength="100" d="M30 80 H44 L49 70 L55 92 L61 63 L67 84 L71 80 H86" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle class="sp-dot" cx="88" cy="80" r="4.5" fill="#ff5f6d"/></svg>
+    <div class="sp-name">MAMA</div>
+    <div class="sp-sub">Здраве във всяка кошница</div>
+  </div>
+  <script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.classList.add('out');setTimeout(function(){s.remove()},500)}},1700);</script>
   <header class="appbar" id="appbar">
     <button class="iconbtn back" id="backBtn" aria-label="Назад">
       <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>
     </button>
     <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 64 64"><path d="M14 26h36l-4 24a4 4 0 0 1-4 3H22a4 4 0 0 1-4-3z" fill="#0e7a5c"/><path d="M22 26l8-12M42 26l-8-12" stroke="#ff6a3d" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M23 46V33l5 7 4-7 4 7 5-7v13" stroke="#fff" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+      <svg viewBox="0 0 120 120"><rect width="120" height="120" rx="26" fill="#10233a"/><path d="M32 56 C32 24, 88 24, 88 56" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M60 52 C56 40, 63 30, 76 28 C78 40, 70 49, 60 52 Z" fill="#b6f36a"/><path d="M22 56 H98 L90 96 C89 100, 86 102, 82 102 H38 C34 102, 31 100, 30 96 Z" fill="#2ed49a"/><rect x="18" y="51" width="84" height="10" rx="5" fill="#6ff0c2"/><path d="M30 80 H44 L49 70 L55 92 L61 63 L67 84 L71 80 H86" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="88" cy="80" r="4.5" fill="#ff5f6d"/></svg>
     </div>
     <div class="grow">
       <h1 id="title">MAMA</h1>
