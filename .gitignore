@@ -3,3 +3,4 @@ node_modules/
 site/
 prev/
 *.log
+www/build.json

@@ -35,6 +35,8 @@ jobs:
 
       - name: Зависимости и синхронизация
         run: |
+          echo "{\"code\": ${{ github.run_number }}}" > www/build.json
+          cat www/build.json
           npm ci
           npx cap sync android
 
