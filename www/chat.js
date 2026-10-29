@@ -285,7 +285,6 @@ async function callStart(r, video) {
   let local; try { local = await navigator.mediaDevices.getUserMedia({ audio: true, video: video ? { facingMode: 'user' } : false }); } catch (e) { return toast('Разреши достъп до ' + (video ? 'камерата и микрофона' : 'микрофона')); }
   const mem = Object.entries(r.mem || {}).filter(([id]) => id !== CHS().me.id).map(([, x]) => x);
   const c = CH.call = { room: r, cid: uid(), video, local, role: 'caller', state: 'calling', facing: 'user', peer: mem.length === 1 ? mem[0] : { n: r.name, e: '🍽️' } };
-  musStop && MUS.playing && musStop(true);
   callUI(c, 'Звъни…');
   c.pc = newPC(c); local.getTracks().forEach(t => c.pc.addTrack(t, local));
   await c.pc.setLocalDescription(await c.pc.createOffer()); await iceDone(c.pc);
@@ -313,7 +312,7 @@ function callIn(r, m) {
 async function callAccept() {
   const c = CH.call; if (!c || c.state !== 'ring') return; ring(false); clearTimeout(c.ringTO);
   try { c.local = await navigator.mediaDevices.getUserMedia({ audio: true, video: c.video ? { facingMode: 'user' } : false }); } catch (e) { toast('Разреши достъп до камерата/микрофона'); return callEnd(true); }
-  c.state = 'connecting'; musStop && MUS.playing && musStop(true); callUI(c, 'Свързване…');
+  c.state = 'connecting'; callUI(c, 'Свързване…');
   c.pc = newPC(c); c.local.getTracks().forEach(t => c.pc.addTrack(t, c.local));
   await c.pc.setRemoteDescription({ type: 'offer', sdp: c.offer });
   await c.pc.setLocalDescription(await c.pc.createAnswer()); await iceDone(c.pc);
@@ -351,9 +350,8 @@ function ring(on) {
   renderMore = function (el) {
     bMore(el);
     const n = chUnread();
-    el.insertAdjacentHTML('afterbegin', `<div class="more-duo"><button class="duo chat" data-go3="chat"><span class="duo-e">🍽️💬</span><b>На масата</b><span>Чат, гласови, видео${n ? ` · <i class="chat-un">${n}</i>` : ''}</span></button><button class="duo music" id="duoMus"><span class="duo-e">🎷</span><b>MAMA Lounge</b><span>${MUS.playing ? 'Свири сега ♪' : 'Лек джаз и музика'}</span></button></div>`);
+    el.insertAdjacentHTML('afterbegin', `<div class="more-duo"><button class="duo chat" data-go3="chat"><span class="duo-e">🍽️💬</span><b>На масата</b><span>Чат, гласови, видео${n ? ` · <i class="chat-un">${n}</i>` : ''}</span></button></div>`);
     el.querySelector('[data-go3="chat"]').onclick = () => go('chat');
-    el.querySelector('#duoMus').onclick = musSheet;
   };
   const bHome = renderHome;
   renderHome = function (el) {

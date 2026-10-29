@@ -470,25 +470,10 @@ label.btn { cursor: pointer; }
 .ow-shop span { font-size: 12px; color: #6a5f80; line-height: 1.3; }
 @media (prefers-reduced-motion: reduce) { .ow-mascot { animation: none; } }
 
-/* ═══ MAMA Lounge ═══ */
-.mus-fab { position: fixed; right: 14px; bottom: calc(var(--nav-h) + var(--safe-b) + 14px); z-index: 60; width: 50px; height: 50px; border-radius: 50%; border: 0;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; font-size: 22px; box-shadow: 0 8px 20px rgba(139, 92, 246, .4); display: grid; place-items: center; }
-.mus-fab:not(.on) { background: rgba(255,255,255,.92); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
-body.in-chat .mus-fab { display: none; }
-.mus-fab .eq { display: flex; gap: 3px; align-items: flex-end; height: 20px; }
-.mus-fab .eq i { width: 4px; background: #fff; border-radius: 2px; animation: eq 1s ease-in-out infinite; }
-.mus-fab .eq i:nth-child(2) { animation-delay: .25s; } .mus-fab .eq i:nth-child(3) { animation-delay: .5s; }
-@keyframes eq { 0%,100% { height: 6px; } 50% { height: 20px; } }
-.mus-moods { display: grid; gap: 8px; margin-top: 12px; }
-.mus-mood { display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--line, #dfe9e3); background: var(--surface, #fff); border-radius: 16px; padding: 12px 14px; font-size: 16px; font-weight: 700; color: inherit; text-align: left; }
-.mus-mood span { font-size: 26px; }
-.mus-mood.on { border-color: #8b5cf6; background: linear-gradient(120deg, #f3ecff, #fdeaf4); }
-
 /* ═══ Още: На масата + Lounge ═══ */
-.more-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.more-duo { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
 .duo { border: 0; border-radius: 22px; padding: 16px 14px; text-align: left; color: #fff; display: grid; gap: 3px; box-shadow: 0 10px 24px rgba(0,0,0,.12); }
 .duo.chat { background: linear-gradient(135deg, #ff9a3d, #ff5e62); }
-.duo.music { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
 .duo-e { font-size: 28px; } .duo b { font-size: 16px; } .duo span:last-child { font-size: 12.5px; opacity: .92; }
 
 /* ═══ На масата ═══ */
@@ -534,4 +519,3 @@ body.in-chat .mus-fab { display: none; }
 .cb-btn.off { background: rgba(255,255,255,.55); opacity: .6; }
 .cb-btn.red { background: #ef4444; } .cb-btn.green { background: #22c55e; animation: cdot 1.2s infinite; }
 nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e62; }
-.sheet.open ~ .mus-fab, .sheet.open ~ * .mus-fab { display: none; }
