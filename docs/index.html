@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MAMA — My Amazing Market Area</title>
+  <meta name="description" content="Сравни цените в Kaufland, Lidl, Billa, Fantastico и T Market, води списък и разходи, получавай идеи какво да сготвиш и откъде да купиш най-евтино. Безплатно приложение за Android.">
+  <meta name="theme-color" content="#0b8a5f">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MAMA">
+  <meta property="og:title" content="MAMA — приложение за умно пазаруване">
+  <meta property="og:description" content="Цени по вериги, списък за пазар, седмично меню, рецепти от 20 кухни и My Doctor. Свали безплатно за Android.">
+  <meta property="og:url" content="https://ngerchev-code.github.io/mama/">
+  <meta property="og:image" content="https://ngerchev-code.github.io/mama/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="bg_BG">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <style>
+    :root { --g1: #0b8a5f; --g2: #13a86f; --lime: #8bd34a; --or: #ff9a3d; --ink: #10201a; --muted: #5d6b66; --bg: #f2fbf5; --card: #ffffff; }
+    @media (prefers-color-scheme: dark) { :root { --ink: #e8f2ed; --muted: #9fb2aa; --bg: #08140f; --card: #13221c; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.45; }
+    .hero { color: #fff; padding: 40px 16px 70px; text-align: center; position: relative; overflow: hidden;
+      background: radial-gradient(60vmax 50vmax at 105% -10%, rgba(139,211,74,.75), transparent 60%), radial-gradient(50vmax 45vmax at -15% 110%, rgba(255,154,61,.65), transparent 60%), linear-gradient(160deg, #0b8a5f, #13a86f 60%, #0a6b4a); }
+    .icon { width: 108px; height: 108px; border-radius: 28px; box-shadow: 0 14px 34px rgba(0,0,0,.25); }
+    h1 { font-size: 46px; margin: 14px 0 0; letter-spacing: 1px; }
+    .sub { opacity: .92; font-size: 17px; margin-top: 2px; }
+    .tag { font-size: 18px; font-weight: 600; margin: 16px auto 22px; max-width: 520px; }
+    .dl { display: inline-flex; align-items: center; gap: 10px; background: #fff; color: var(--g1); font-weight: 800; font-size: 20px; text-decoration: none;
+      padding: 16px 28px; border-radius: 999px; box-shadow: 0 12px 28px rgba(0,0,0,.22); transition: transform .15s; }
+    .dl:active { transform: scale(.97); }
+    .dl svg { width: 26px; height: 26px; }
+    .ver { font-size: 13px; opacity: .85; margin-top: 12px; }
+    .ios { display: none; background: rgba(255,255,255,.18); border-radius: 14px; padding: 10px 14px; margin: 16px auto 0; max-width: 420px; font-size: 14px; }
+    main { max-width: 760px; margin: -40px auto 0; padding: 0 16px 40px; position: relative; }
+    .card { background: var(--card); border-radius: 22px; padding: 20px; box-shadow: 0 6px 24px rgba(11,90,62,.10); margin-bottom: 16px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    .feat { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .f { display: flex; gap: 10px; align-items: flex-start; }
+    .f .e { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 22px; flex: none; background: linear-gradient(135deg, rgba(139,211,74,.28), rgba(52,211,153,.2)); }
+    .f b { display: block; }
+    .f span { color: var(--muted); font-size: 14px; }
+    .shots { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; scroll-snap-type: x mandatory; }
+    .shots img { width: 200px; border-radius: 22px; box-shadow: 0 8px 20px rgba(0,0,0,.15); scroll-snap-align: start; flex: none; }
+    ol { padding-left: 22px; margin: 0; }
+    ol li { margin-bottom: 8px; }
+    .note { background: rgba(255,154,61,.14); border-radius: 14px; padding: 12px 14px; font-size: 14px; margin-top: 12px; }
+    .share { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 140px; border: 0; border-radius: 999px; padding: 13px 16px; font-weight: 700; font-size: 15px; cursor: pointer; text-decoration: none; text-align: center; color: #fff; }
+    .viber { background: #7360f2; } .wa { background: #25d366; } .copy { background: var(--g1); }
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 16px 30px; }
+    @media (max-width: 520px) { .feat { grid-template-columns: 1fr; } h1 { font-size: 40px; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <img class="icon" src="icon.png" alt="MAMA">
+    <h1>MAMA</h1>
+    <div class="sub">My Amazing Market Area</div>
+    <div class="tag">Умното пазаруване: цени по вериги, списък, разходи, меню и рецепти — в едно приложение.</div>
+    <a class="dl" id="dl" href="https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.6 9.48l1.84-3.18a.5.5 0 0 0-.87-.5l-1.86 3.22a11.4 11.4 0 0 0-9.42 0L5.43 5.8a.5.5 0 0 0-.87.5L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 1.25-1.25A1.25 1.25 0 0 1 7 15.25zm10 0A1.25 1.25 0 1 1 18.25 14 1.25 1.25 0 0 1 17 15.25z"/></svg>
+      Свали за Android
+    </a>
+    <div class="ver" id="ver">Безплатно · без реклами · ~3 MB</div>
+    <div class="ios" id="ios">📱 Приложението е за Android. На iPhone засега не може да се инсталира.</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Какво може MAMA</h2>
+      <div class="feat">
+        <div class="f"><div class="e">🏷️</div><div><b>Цени по вериги</b><span>Kaufland, Lidl, Billa, Fantastico, T Market и др. — по официалните данни на КЗП „Колко струва“.</span></div></div>
+        <div class="f"><div class="e">🛒</div><div><b>Списък за пазар</b><span>Казва къде е най-евтино за целия списък и в кои два магазина да пазаруваш.</span></div></div>
+        <div class="f"><div class="e">📊</div><div><b>Статистика</b><span>Колко харчиш на месец, къде пазаруваш, по списък срещу реално.</span></div></div>
+        <div class="f"><div class="e">🍲</div><div><b>Какво да сготвим?</b><span>Всяка седмица 3 ястия и салата + подсещания с рецепта и откъде да купиш продуктите.</span></div></div>
+        <div class="f"><div class="e">🌍</div><div><b>Свят</b><span>Популярни ястия от 20 кухни — Сърбия, Турция, Гърция, Италия, Индия, Япония…</span></div></div>
+        <div class="f"><div class="e">🩺</div><div><b>My Doctor</b><span>Хранителен режим според целите и изследванията ти (холестерол, захар, кръвно…).</span></div></div>
+        <div class="f"><div class="e">⛔</div><div><b>Забранени храни</b><span>Отбележи какво избягваш — маркира се навсякъде.</span></div></div>
+        <div class="f"><div class="e">📍</div><div><b>Магазини, новини, време</b><span>Най-близките обекти в Google Maps, новини за цени и проверки, прогноза.</span></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Как изглежда</h2>
+      <div class="shots">
+        <img src="img/1-nachalo.jpg" alt="Начало" loading="lazy">
+        <img src="img/2-yastie.jpg" alt="Предложение за ястие" loading="lazy">
+        <img src="img/3-recepta.jpg" alt="Рецепта и откъде да купиш" loading="lazy">
+        <img src="img/4-svyat.jpg" alt="Свят" loading="lazy">
+        <img src="img/5-izbor.jpg" alt="Първоначален избор" loading="lazy">
+        <img src="img/6-gid.jpg" alt="Гид" loading="lazy">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Как да инсталирам</h2>
+      <ol>
+        <li>Натисни <b>„Свали за Android“</b> горе.</li>
+        <li>Когато свалянето приключи, отвори файла <b>MAMA.apk</b> (от известията или от „Изтегляния“).</li>
+        <li>Ако телефонът попита, разреши <b>„Инсталиране на неизвестни приложения“</b> за браузъра.</li>
+        <li>Натисни <b>Инсталирай</b> → <b>Отвори</b>. При първо пускане разреши местоположението, за да видиш цените в твоя град.</li>
+      </ol>
+      <div class="note">ℹ️ Предупреждението „неизвестен източник“ е нормално — приложението още не е в Google Play. Новите версии се инсталират върху старата, без да се губят данни.</div>
+    </section>
+
+    <section class="card">
+      <h2>Сподели с приятели</h2>
+      <div class="share">
+        <a class="btn viber" id="shViber" href="#">Viber</a>
+        <a class="btn wa" id="shWa" href="#">WhatsApp</a>
+        <button class="btn copy" id="shCopy">Копирай линка</button>
+      </div>
+    </section>
+  </main>
+  <footer>MAMA — My Amazing Market Area · Цени: КЗП, портал „Колко струва“ (отворени данни) · Времето: Open-Meteo</footer>
+
+  <script>
+    (function () {
+      var url = 'https://ngerchev-code.github.io/mama/';
+      var text = 'Пробвай MAMA — приложение за умно пазаруване: цени по вериги, списък, меню и рецепти 👉 ' + url;
+      document.getElementById('shViber').href = 'viber://forward?text=' + encodeURIComponent(text);
+      document.getElementById('shWa').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+      document.getElementById('shCopy').onclick = function () {
+        var b = this;
+        try { navigator.clipboard.writeText(url).then(function () { b.textContent = '✓ Копирано'; }); }
+        catch (e) { prompt('Копирай линка:', url); }
+      };
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) document.getElementById('ios').style.display = 'block';
+      fetch('https://api.github.com/repos/ngerchev-code/mama/releases/latest').then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.tag_name) return;
+        var a = (d.assets || []).filter(function (x) { return x.name === 'MAMA.apk'; })[0];
+        var mb = a ? (a.size / 1048576).toFixed(1) + ' MB' : '';
+        var dt = new Date(d.published_at).toLocaleDateString('bg-BG');
+        document.getElementById('ver').textContent = 'Версия ' + d.tag_name.replace(/^v/, '') + ' · ' + dt + (mb ? ' · ' + mb : '') + ' · безплатно';
+      }).catch(function () {});
+    })();
+  </script>
+</body>
+</html>
