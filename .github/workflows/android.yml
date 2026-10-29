@@ -46,6 +46,7 @@ jobs:
           ./gradlew --no-daemon --stacktrace assembleRelease bundleRelease 2>&1 | tee ../gradle.log
           cp app/build/outputs/apk/release/app-release.apk ../MAMA-1.0.${VERSION_CODE}.apk
           cp app/build/outputs/bundle/release/app-release.aab ../MAMA-1.0.${VERSION_CODE}.aab
+          cp app/build/outputs/apk/release/app-release.apk ../MAMA.apk
 
       - uses: actions/upload-artifact@v4
         with:
@@ -61,9 +62,10 @@ jobs:
           name: MAMA 1.0.${{ github.run_number }}
           make_latest: true
           body: |
-            MAMA — My Amazing Market Area. Свали **MAMA-1.0.${{ github.run_number }}.apk** на телефона и го инсталирай.
+            MAMA — My Amazing Market Area. Свали **MAMA.apk** на телефона и го инсталирай. Постоянен линк към последната версия: https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk
             Файлът .aab е за качване в Google Play Console.
           files: |
+            MAMA.apk
             MAMA-*.apk
             MAMA-*.aab
 
