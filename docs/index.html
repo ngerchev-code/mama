@@ -158,5 +158,11 @@
       }).catch(function () {});
     })();
   </script>
+<script>
+/* анонимно броене на посещенията (веднъж на ден за браузър) */
+(function(){try{var d=new Date(),p=function(n){return(n<10?'0':'')+n},k=''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+if(localStorage.getItem('mamaSite')===k)return;localStorage.setItem('mamaSite',k);
+['site','site-'+k].forEach(function(x){fetch('https://abacus.jasoncameron.dev/hit/mama-ngerchev/'+x,{mode:'cors'}).catch(function(){})});}catch(e){}})();
+</script>
 </body>
 </html>

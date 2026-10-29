@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MAMA — статистика</title>
+<link rel="icon" href="icon.png">
+<style>
+  :root { --bg:#eef7f1; --card:#fff; --ink:#123227; --mut:#5d7a6e; --pri:#0e7a5c; --acc:#ff6a3d; --line:#d7e9df; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:linear-gradient(135deg,#0e7a5c,#19a87a); color:#fff; padding:22px 16px 18px; }
+  header h1 { margin:0; font-size:22px; } header p { margin:4px 0 0; opacity:.85; font-size:13px; }
+  main { max-width:900px; margin:0 auto; padding:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .card { background:var(--card); border-radius:16px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .k { font-size:12.5px; color:var(--mut); } .v { font-size:30px; font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .s { font-size:12px; color:var(--mut); margin-top:2px; }
+  h2 { font-size:16px; margin:22px 0 10px; }
+  .chart { display:flex; align-items:flex-end; gap:6px; height:170px; padding-top:18px; }
+  .bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0; }
+  .bar i { display:block; width:100%; background:var(--pri); border-radius:6px 6px 2px 2px; min-height:2px; }
+  .bar.today i { background:var(--acc); }
+  .bar b { font-size:11px; font-weight:700; margin-bottom:3px; } .bar span { font-size:10.5px; color:var(--mut); margin-top:4px; white-space:nowrap; }
+  table { width:100%; border-collapse:collapse; } td { padding:7px 4px; border-top:1px solid var(--line); } td:last-child { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+  .note { font-size:12.5px; color:var(--mut); margin-top:18px; }
+  button { background:var(--pri); color:#fff; border:0; border-radius:999px; padding:9px 16px; font-weight:700; font-size:14px; cursor:pointer; }
+  .top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<header><h1>📊 MAMA — потребители</h1><p id="upd">Зареждане…</p></header>
+<main>
+  <div class="grid">
+    <div class="card"><div class="k">Инсталации общо</div><div class="v" id="inst">…</div><div class="s" id="instSplit"></div></div>
+    <div class="card"><div class="k">Активни днес</div><div class="v" id="dau">…</div><div class="s" id="dauSplit"></div></div>
+    <div class="card"><div class="k">Активни този месец</div><div class="v" id="mau">…</div><div class="s" id="mauPrev"></div></div>
+    <div class="card"><div class="k">Отваряния днес</div><div class="v" id="opens">…</div><div class="s" id="opensY"></div></div>
+    <div class="card"><div class="k">Свалени APK</div><div class="v" id="apk">…</div><div class="s">от GitHub, всички версии</div></div>
+    <div class="card"><div class="k">Посещения на сайта днес</div><div class="v" id="site">…</div><div class="s" id="siteAll"></div></div>
+  </div>
+
+  <div class="top"><h2>Активни потребители — последните 14 дни</h2><button id="re">Обнови</button></div>
+  <div class="card"><div class="chart" id="chart"></div></div>
+
+  <h2>Версии в употреба (устройства, минали на версията)</h2>
+  <div class="card"><table id="vers"></table></div>
+
+  <p class="note">Броенето е анонимно: всяко устройство изпраща само „+1“ при първа инсталация, веднъж на ден и веднъж на месец. Не се събират лични данни. Потребителите могат да го изключат от Настройки. Броят е от версия 1.0.13 нататък.<br>© 2026 Николай Герчев. Всички права запазени.</p>
+</main>
+<script>
+const NS = 'mama-ngerchev', API = 'https://abacus.jasoncameron.dev/get/' + NS + '/';
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function get(k) {
+  for (let t = 0; t < 2; t++) {
+    try { const r = await fetch(API + k, { cache: 'no-store' }); if (r.status === 404) return 0; if (r.ok) return (await r.json()).value || 0; if (r.status === 429) await sleep(3000); } catch (e) {}
+  }
+  return 0;
+}
+async function many(keys) { const out = {}; for (const k of keys) { out[k] = await get(k); await sleep(120); } return out; }
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('bg-BG');
+
+async function load() {
+  $('upd').textContent = 'Зареждане…';
+  const now = new Date(), today = ymd(now);
+  const yest = ymd(new Date(now - 864e5));
+  const mon = today.slice(0, 6), pm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMon = '' + pm.getFullYear() + pad(pm.getMonth() + 1);
+  const days = []; for (let i = 13; i >= 0; i--) days.push(new Date(now - i * 864e5));
+  const plats = ['android', 'ios', 'pwa', 'web', 'ios-web'];
+  const PL = { android: 'Android', ios: 'iPhone', pwa: 'уеб прил.', web: 'браузър', 'ios-web': 'iPhone браузър' };
+
+  // GitHub: свалени APK и последна версия
+  let latest = 0, apk = 0;
+  try {
+    const r = await fetch('https://api.github.com/repos/ngerchev-code/mama/releases?per_page=100');
+    const rel = await r.json();
+    rel.forEach(x => (x.assets || []).forEach(a => { if (/\.apk$/.test(a.name)) apk += a.download_count; }));
+    latest = Math.max(0, ...rel.map(x => +((/(\d+)$/.exec(x.tag_name) || [0, 0])[1])));
+  } catch (e) {}
+  $('apk').textContent = fmt(apk);
+
+  const keys = ['installs', ...plats.map(p => 'installs-' + p), 'm-' + mon, 'm-' + prevMon, 'o-' + today, 'o-' + yest,
+    ...plats.slice(0, 3).map(p => 'd-' + p + '-' + today), 'site', 'site-' + today];
+  const v = await many(keys);
+  $('inst').textContent = fmt(v.installs);
+  $('instSplit').textContent = plats.filter(p => v['installs-' + p]).map(p => PL[p] + ' ' + v['installs-' + p]).join(' · ') || '—';
+  $('mau').textContent = fmt(v['m-' + mon]); $('mauPrev').textContent = 'предходния месец: ' + fmt(v['m-' + prevMon]);
+  $('opens').textContent = fmt(v['o-' + today]); $('opensY').textContent = 'вчера: ' + fmt(v['o-' + yest]);
+  $('site').textContent = fmt(v['site-' + today]); $('siteAll').textContent = 'общо: ' + fmt(v.site);
+
+  const dv = await many(days.map(d => 'd-' + ymd(d)));
+  const vals = days.map(d => dv['d-' + ymd(d)]), max = Math.max(1, ...vals);
+  $('dau').textContent = fmt(vals[vals.length - 1]);
+  $('dauSplit').textContent = plats.slice(0, 3).filter(p => v['d-' + p + '-' + today]).map(p => PL[p] + ' ' + v['d-' + p + '-' + today]).join(' · ');
+  $('chart').innerHTML = days.map((d, i) => `<div class="bar${i === 13 ? ' today' : ''}" title="${d.toLocaleDateString('bg-BG')}: ${vals[i]}"><b>${vals[i] || ''}</b><i style="height:${vals[i] / max * 100}%"></i><span>${d.getDate()}.${pad(d.getMonth() + 1)}</span></div>`).join('');
+
+  const vk = []; for (let n = latest; n > Math.max(0, latest - 6); n--) vk.push(n);
+  const vv = await many(vk.map(n => 'v-' + n));
+  $('vers').innerHTML = vk.map(n => `<tr><td>1.0.${n}${n === latest ? ' (последна)' : ''}</td><td>${fmt(vv['v-' + n])}</td></tr>`).join('') || '<tr><td>—</td><td></td></tr>';
+
+  $('upd').textContent = 'Обновено: ' + now.toLocaleString('bg-BG');
+}
+$('re').onclick = load;
+load();
+</script>
+</body>
+</html>
