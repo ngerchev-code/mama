@@ -373,3 +373,6 @@ details.day { border-bottom: 1px solid var(--line); padding: 8px 0; }
 details.day summary { cursor: pointer; }
 details.day .small > div { margin: 3px 0; }
 label.btn { cursor: pointer; }
+.cups { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; font-size: 18px; }
+.cups span { opacity: .22; filter: grayscale(1); transition: .2s; }
+.cups span.on { opacity: 1; filter: none; }
