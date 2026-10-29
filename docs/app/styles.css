@@ -376,3 +376,19 @@ label.btn { cursor: pointer; }
 .cups { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; font-size: 18px; }
 .cups span { opacity: .22; filter: grayscale(1); transition: .2s; }
 .cups span.on { opacity: 1; filter: none; }
+
+/* ═══ Умен списък и събития ═══ */
+.lrow { border-radius: 14px; padding: 9px 8px !important; margin: 4px 0; border-bottom: 0 !important; transition: background .2s; }
+.lrow.need { background: rgba(255, 107, 74, .08); box-shadow: inset 3px 0 0 rgba(255, 107, 74, .55); }
+.lrow.got { background: rgba(18, 146, 94, .10); box-shadow: inset 3px 0 0 rgba(18, 146, 94, .6); }
+.lrow.got .title { text-decoration: line-through; text-decoration-color: rgba(18,146,94,.6); color: var(--muted); }
+.lrow [data-check2] { cursor: pointer; }
+.prog { height: 12px; border-radius: 6px; background: rgba(255, 107, 74, .16); overflow: hidden; margin-top: 8px; }
+.prog i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #12925e, #8bd34a); transition: width .3s; }
+.sug-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sug { display: inline-flex; border-radius: 999px; background: var(--accent-soft); overflow: hidden; }
+.sug button { border: 0; background: none; padding: 7px 10px; font-size: 13.5px; cursor: pointer; color: var(--text); }
+.sug button + button { padding: 7px 9px 7px 2px; opacity: .55; }
+.cal-d.ev { background: rgba(255, 154, 61, .22); font-weight: 700; }
+.cal-d .evdot { position: absolute; top: 4px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: #ff6b4a; }
+.bars.wide .bar { grid-template-columns: 150px 1fr 56px; }
