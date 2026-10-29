@@ -242,10 +242,10 @@ function onboarding(step = 0) {
       <button class="onb-opt wide ${p.noPork ? 'on' : ''}" id="onbPork"><span>🐖</span><b>Без свинско</b></button>`,
     () => `<div class="onb-emoji">🌍</div><h2>Коя кухня обичаш?</h2><div class="onb-sub">Избери една или няколко — менюто за седмицата ще е от тях.</div>
       <div class="onb-flags">${CUISINES.map(c => `<button class="onb-flag ${p.cuisines.includes(c.id) ? 'on' : ''}" data-cu="${c.id}"><span>${c.f}</span>${esc(c.n)}</button>`).join('')}</div>`,
-    () => `<div class="onb-emoji">🔔</div><h2>Подсещания</h2><div class="onb-sub">Два пъти седмично ще те питаме какво да сготвим, а в петък ще ти напомним за списъка за пазар.</div>
+    () => `<div class="onb-emoji">🔔</div><h2>Подсещания</h2><div class="onb-sub">${LN() ? 'Два пъти седмично ще те питаме какво да сготвим, а в петък ще ти напомним за списъка за пазар.' : 'Когато отваряш MAMA, ще ти предлагаме ястия, промоции и напомняния за списъка за пазар.'}</div>
       <label class="lbl" style="color:#fff">Колко души сте вкъщи?</label>
       <div class="onb-grid">${[1, 2, 3, 4, 5].map(n => `<button class="onb-opt small ${p.household === n ? 'on' : ''}" data-hh="${n}"><b>${n}${n === 5 ? '+' : ''}</b></button>`).join('')}</div>
-      <button class="onb-opt wide ${p.notif ? 'on' : ''}" id="onbNotif"><span>🔔</span><b>Изпращай ми известия</b></button>`,
+      ${LN() ? `<button class="onb-opt wide ${p.notif ? 'on' : ''}" id="onbNotif"><span>🔔</span><b>Изпращай ми известия</b></button>` : ''}`,
   ];
   let el = document.querySelector('.onb');
   if (!el) { el = document.createElement('div'); el.className = 'onb'; document.body.appendChild(el); }
@@ -333,6 +333,18 @@ function bindNotifTaps() {
       else if (x.go) go(x.go);
     }, 700);
   });
+}
+
+/* ─── iPhone: инсталиране като приложение ─────────────────────────────── */
+function iosNeedsInstall() {
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  return ios && !standalone;
+}
+function iosInstallPopup() {
+  popup({ theme: 'night', emoji: '📲', key: 'ios', kicker: 'iPhone', title: 'Сложи MAMA на началния екран',
+    text: '1. Натисни <b>Сподели</b> <span class="pop-chip">⬆️</span> долу в Safari<br>2. Избери <b>„Добави към началния екран“</b><br>3. Натисни <b>Добави</b><br><br>MAMA ще се отваря на цял екран като приложение, с иконка.',
+    actions: [{ label: 'Разбрах', primary: true, fn: null }] });
 }
 
 /* ─── Свят ─────────────────────────────────────────────────────────────── */
@@ -447,6 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindNotifTaps();
   const ready = () => {
     if (!P().onboarded) { onboarding(0); return; }
+    if (iosNeedsInstall() && daysSince(S.guide.last.ios) >= 3) { setTimeout(iosInstallPopup, 900); return; }
     setupNotifications(false);
     if (!S.guide.toured) { setTimeout(startTour, 500); return; }
     setTimeout(() => guideTick(false), 1800);
