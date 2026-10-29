@@ -368,3 +368,8 @@ nav.bottom button.active .pill { background: linear-gradient(120deg, rgba(255,10
 .lt.best { background: #d6f5e3; color: #0b6b44; } .lt.warn { background: #ffe7bf; color: #8a5300; } .lt.bad { background: #ffd6d0; color: #b3261e; }
 .lt.best small, .lt.warn small, .lt.bad small { color: inherit; opacity: .8; }
 @media (prefers-color-scheme: dark) { .lt.best { background: #13402b; color: #7fe0b0; } .lt.warn { background: #45320c; color: #ffc766; } .lt.bad { background: #4a1714; color: #ff9b8f; } }
+.dr-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 10px; }
+details.day { border-bottom: 1px solid var(--line); padding: 8px 0; }
+details.day summary { cursor: pointer; }
+details.day .small > div { margin: 3px 0; }
+label.btn { cursor: pointer; }

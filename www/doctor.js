@@ -408,16 +408,22 @@ function renderDoctor(el) {
         <div class="suggest"><div class="e">📈</div><div>Проследяване на изследванията ти във времето</div></div>
         <div class="suggest"><div class="e">👨‍⚕️</div><div>Към кой лекар да поискаш направление и кога е спешно</div></div>
         <div class="suggest"><div class="e">🏷️</div><div>Бележки към продуктите в Цени и Списък — какво да избираш и какво да ограничиш</div></div>
+        <div class="suggest"><div class="e">📷</div><div>Снимай изследването — MAMA разчита стойностите и прави анализ, прогноза и меню</div></div>
+        <div class="suggest"><div class="e">🌿</div><div>Аптеката на баба — билки, чайове и народни напитки с бележки какво е доказано</div></div>
+        <div class="suggest"><div class="e">📄</div><div>Програма и меню в PDF — за теб или за лекаря</div></div>
         <button class="btn primary block" id="drStart" style="margin-top:12px">Започни</button></div>
       ${drDisclaimer()}`;
     el.querySelector('#drStart').onclick = () => drWizard(0);
     return;
   }
-  const tabs = [['plan', 'Моят режим'], ['labs', 'Показатели'], ['doc', 'Към лекар'], ['src', 'Източници']];
-  el.innerHTML = `<div class="chips">${tabs.map(([k, n]) => `<button class="chip ${drTab === k ? 'on' : ''}" data-drt="${k}">${n}</button>`).join('')}</div><div id="drBody"></div>`;
+  const tabs = [['plan', 'Моят режим'], ['goal', '🎯 Цел и срок'], ['labs', 'Показатели'], ['herbs', '🌿 Аптеката на баба'], ['diary', '📔 Дневник'], ['doc', 'Към лекар'], ['src', 'Източници']];
+  el.innerHTML = `<div class="dr-actions"><button class="btn primary" id="drPhoto">📷 Качи изследване</button><button class="btn tonal" id="drPdf">📄 PDF</button></div>
+    <div class="chips">${tabs.map(([k, n]) => `<button class="chip ${drTab === k ? 'on' : ''}" data-drt="${k}">${n}</button>`).join('')}</div><div id="drBody"></div>`;
+  el.querySelector('#drPhoto').onclick = () => labPhoto();
+  el.querySelector('#drPdf').onclick = () => drPdf();
   el.querySelectorAll('[data-drt]').forEach(b => b.onclick = () => { drTab = b.dataset.drt; renderDoctor(el); });
   const body = el.querySelector('#drBody');
-  ({ plan: drPlan, labs: drLabs, doc: drDoc, src: drSrc })[drTab](body);
+  ({ plan: drPlan, labs: drLabs, doc: drDoc, src: drSrc, goal: drGoal, herbs: drHerbs, diary: drDiary })[drTab](body);
 }
 function drDisclaimer() {
   return `<div class="notice info">ℹ️ <div>My Doctor е информационен инструмент и не поставя диагнози, нито заменя лекар или диетолог. При лечение с лекарства, бременност, бъбречно заболяване или хранителни разстройства съгласувай промените с лекуващия лекар. Данните остават само на телефона ти.</div></div>`;
