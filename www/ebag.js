@@ -53,8 +53,8 @@ function ebagCard(where) {
   const open = S.list.filter(i => !i.done);
   if (where === 'home' && !wc && !kid) return '';
   const W = wc && WX_CASES[wc];
-  const head = W ? `${W.e} ${W.title}` : (hh === 'baby' ? '👶 Пазарувай от вкъщи' : '👨‍👩‍👧 Пазарувай от вкъщи');
-  const sub = W ? W.text : 'С малко дете е по-лесно: поръчай нужното онлайн и вземи доставката до вратата.';
+  const head = W ? `${W.e} ${W.title}` : kid ? (hh === 'baby' ? '👶 Пазарувай от вкъщи' : '🧒 Пазарувай от вкъщи') : '🛒 Пазарът до вратата';
+  const sub = W ? W.text : kid ? 'С дете е по-лесно: поръчай нужното онлайн и вземи доставката до вратата.' : 'Храни и всичко за дома от eBag — поръчай целия си списък с доставка.';
   return `<div class="card ebag" ${W ? `style="background:${W.theme}"` : ''}>
     <div class="row between"><h2 style="margin:0">${head}</h2><span class="ebag-logo">eBag</span></div>
     <div class="small" style="margin:6px 0 10px;opacity:.95">${sub}</div>
@@ -152,4 +152,85 @@ function ebagNudge() {
 (function () {
   const bw = loadWeather;
   loadWeather = async function () { await bw(); if (current === 'home') render(); setTimeout(ebagNudge, 2500); };
+})();
+
+/* ─── „Да пазаруваме заедно“ — приветлив помощник при влизане в Онлайн ─── */
+const OW_HELLO = [
+  ['🛍️', 'Хайде на пазар — без да ставаш от дивана!', 'Кажи какво ти се търси днес, а аз ще намеря къде е най-удобно.'],
+  ['😉', 'Ти казваш КАКВО, аз казвам КЪДЕ', 'Сподели какво търсиш и нека заедно изберем най-добрия магазин.'],
+  ['🧺', 'Какво липсва вкъщи днес?', 'Мляко, кафе или нови слушалки — пиши смело, ще го намерим.'],
+  ['🌈', 'Днес пазаруваме с усмивка', 'Една дума стига. Аз ще подредя магазините вместо теб.'],
+  ['🕵️', 'Мисия: перфектната покупка', 'Подскажи ми какво търсим и тръгваме на лов за изгодно.']
+];
+const OW_IDEAS = ['☕ Кафе', '🧀 Сирене', '🍫 Шоколад', '🧴 Почистващи', '🧻 Тоалетна хартия', '🐶 Храна за куче', '🎧 Слушалки', '🍳 Тиган', '🎁 Подарък'];
+function owRoute(q) {
+  const t = norm(q);
+  if (/телефон|слушал|лаптоп|таблет|телевиз|зарядн|кабел|часовник|камера|кафемашин|прахосмук|миксер|тиган|тенджер|лампа|играчк|подарък|принтер|мишка|клавиат/.test(t)) return ['emag', 'ebay', 'amazon', 'kauflandmp', 'olx', 'ebag', 'aliexpress', 'ebayde'];
+  if (/ретро|колекц|употреб|антик|винтидж|монет|марка|рядк|стар /.test(t)) return ['ebay', 'olx', 'ebayde', 'emag', 'amazon', 'aliexpress', 'ebag', 'kauflandmp'];
+  return ['ebag', 'kauflandmp', 'emag', 'ebay', 'amazon', 'olx', 'aliexpress', 'ebayde'];
+}
+const OW_WHY = { ebag: 'Храни и всичко за дома с доставка до вратата', emag: 'Техника, дом и подаръци с бърза доставка', ebay: 'Огромен избор, вкл. редки и употребявани неща', ebayde: 'eBay Германия — често по-евтино в ЕС', amazon: 'Amazon Германия — доставка до България', olx: 'Обяви от хора около теб', aliexpress: 'Евтино, но с по-дълга доставка', kauflandmp: 'Kaufland онлайн маркетплейс' };
+
+function onlineWizard() {
+  if (document.getElementById('ow')) return;
+  closePopup && closePopup(true);
+  popOpen = true;
+  const [e, t, s] = OW_HELLO[Math.floor(Math.random() * OW_HELLO.length)];
+  const fromList = S.list.filter(i => !i.done).slice(0, 4).map(i => '📝 ' + i.name);
+  const wc = weatherCase(), kid = KID_PICKS[household()];
+  const extra = [...(wc ? WX_CASES[wc].picks.slice(0, 2).map(x => WX_CASES[wc].e + ' ' + x) : []), ...(kid ? kid.items.slice(0, 2).map(x => (household() === 'baby' ? '👶 ' : '🧒 ') + x) : [])];
+  const ideas = [...new Set([...fromList, ...extra, ...OW_IDEAS])].slice(0, 10);
+  const name = (P().name || '').trim().split(' ')[0];
+  const w = document.createElement('div'); w.id = 'ow'; w.className = 'ow';
+  w.innerHTML = `<div class="ow-card"><button class="ow-x" aria-label="Затвори">✕</button><div class="ow-step" id="owStep"></div></div>`;
+  document.body.appendChild(w);
+  const step = w.querySelector('#owStep');
+  const close = () => { w.classList.remove('in'); popOpen = false; setTimeout(() => w.remove(), 350); };
+  w.querySelector('.ow-x').onclick = close;
+  w.onclick = ev => { if (ev.target === w) close(); };
+  const swap = html => { step.classList.add('out'); setTimeout(() => { step.innerHTML = html; step.classList.remove('out'); }, 180); };
+
+  const ask = () => {
+    step.innerHTML = `<div class="ow-mascot">${e}</div>
+      <div class="ow-kicker">${name ? `Здрасти, ${esc(name)}!` : 'Здрасти!'} 👋</div>
+      <h2 class="ow-title">${t}</h2>
+      <p class="ow-text">${s}</p>
+      <form class="ow-field" id="owF"><input id="owQ" placeholder="Напр. кафе, пелени, слушалки…" autocomplete="off" enterkeyhint="search"><button class="ow-go" aria-label="Напред">→</button></form>
+      <div class="ow-sub">или избери идея:</div>
+      <div class="ow-chips">${ideas.map(x => `<button class="ow-chip" data-i="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+      <button class="ow-skip" id="owSkip">Ще разгледам сам</button>`;
+    const q = step.querySelector('#owQ');
+    setTimeout(() => q.focus(), 400);
+    step.querySelector('#owF').onsubmit = ev => { ev.preventDefault(); if (q.value.trim()) pick(q.value.trim()); else { q.classList.add('shake'); setTimeout(() => q.classList.remove('shake'), 500); } };
+    step.querySelectorAll('[data-i]').forEach(b => b.onclick = () => pick(b.dataset.i.replace(/^\S+\s/, '')));
+    step.querySelector('#owSkip').onclick = close;
+  };
+  const pick = q => {
+    onlineQ = q;
+    const order = owRoute(q), best = ONLINE_SHOPS.find(x => x.id === order[0]);
+    const rest = order.slice(1, 5).map(id => ONLINE_SHOPS.find(x => x.id === id)).filter(Boolean);
+    swap(`<div class="ow-mascot">🎯</div>
+      <div class="ow-kicker">Търсим: „${esc(q)}“</div>
+      <h2 class="ow-title">Ето къде ще го намерим!</h2>
+      <button class="ow-best" data-s="${best.id}"><span class="ow-badge">Препоръчвам</span><span class="ow-sname" style="color:${best.color}">${esc(best.name)}</span><span class="ow-why">${OW_WHY[best.id] || ''}</span><span class="ow-arrow">Отвори ↗</span></button>
+      <div class="ow-sub">или пробвай и тук:</div>
+      <div class="ow-shops">${rest.map(x => `<button class="ow-shop" data-s="${x.id}"><b style="color:${x.color}">${esc(x.name)}</b><span>${OW_WHY[x.id] || ''}</span></button>`).join('')}</div>
+      <div class="row" style="gap:8px;justify-content:center;margin-top:12px"><button class="ow-skip" id="owBack">← Друго търсене</button><button class="ow-skip" id="owAdd">＋ В списъка</button></div>`);
+    setTimeout(() => {
+      step.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { const sh = ONLINE_SHOPS.find(x => x.id === b.dataset.s); close(); render(); openExt(sh.url(q)); });
+      step.querySelector('#owBack').onclick = () => { step.classList.add('out'); setTimeout(() => { ask(); step.classList.remove('out'); }, 180); };
+      step.querySelector('#owAdd').onclick = () => { if (!S.list.some(i => !i.done && norm(i.name) === norm(q))) { S.list.push({ id: uid(), name: q, cat: guessCat(q), qty: 1, done: false, from: 'Онлайн', added: Date.now() }); save(); } toast('Добавено в списъка 📝'); };
+    }, 200);
+  };
+  ask();
+  requestAnimationFrame(() => w.classList.add('in'));
+}
+(function () {
+  const bgo = go;
+  go = function (name, push) {
+    const prev = current;
+    const r = bgo.apply(this, arguments);
+    if (name === 'online' && prev !== 'online') setTimeout(onlineWizard, 260);
+    return r;
+  };
 })();
