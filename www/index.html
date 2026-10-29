@@ -54,6 +54,7 @@
     <section class="screen" id="s-calendar"></section>
     <section class="screen" id="s-scan"></section>
     <section class="screen" id="s-activity"></section>
+    <section class="screen" id="s-chat"></section>
   </main>
 
   <nav class="bottom" id="nav">
@@ -84,6 +85,8 @@
   <script src="update.js"></script>
   <script src="usage.js"></script>
   <script src="ebag.js"></script>
+  <script src="music.js"></script>
+  <script src="chat.js"></script>
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:' && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
       navigator.serviceWorker.register('sw.js').catch(function () {});
