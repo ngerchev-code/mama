@@ -528,3 +528,14 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .wx-bars div { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
 .wx-bars i { display: block; width: 100%; border-radius: 4px 4px 2px 2px; }
 .wx-bars span { font-size: 10px; color: var(--muted, #6b7a75); margin-top: 2px; }
+
+/* ═══ Закуска на деня ═══ */
+.bf-meta { font-weight: 800; font-size: 13.5px; margin-bottom: 8px; opacity: .95; }
+.bf-ing, .bf-st { background: rgba(255,255,255,.94); color: #3b2a12; border-radius: 16px; margin: 0 0 8px; text-align: left; font-size: 14.5px; line-height: 1.45; }
+.bf-ing { list-style: none; padding: 8px 12px; }
+.bf-ing li { padding: 4px 0 4px 22px; position: relative; border-bottom: 1px dashed #f1dcc0; }
+.bf-ing li:last-child { border-bottom: 0; }
+.bf-ing li::before { content: "•"; position: absolute; left: 6px; color: #f76b1c; font-weight: 900; }
+.bf-st { padding: 8px 12px 8px 30px; font-size: 13.5px; }
+.bf-st li { margin: 3px 0; }
+.bf-why { font-size: 13.5px; font-weight: 700; }
