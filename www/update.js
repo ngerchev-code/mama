@@ -25,17 +25,27 @@ async function latestRelease() {
 }
 function UPD() { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater; }
 async function nativeBuild() { try { const i = await window.Capacitor.Plugins.App.getInfo(); return +i.build || 0; } catch (e) { return 0; } }
+/* Прилага изтегленото обновление веднага, когато е удобно (на началния екран, без отворени прозорци), иначе при връщане в приложението */
+function applyLive(up, id) {
+  const ok = () => current === 'home' && !popOpen && !(typeof sheetOpen === 'function' && sheetOpen()) && !document.querySelector('.onb, .tour, #ow, #call');
+  const doIt = () => { toast('✨ Обновяване на MAMA…'); setTimeout(() => up.set({ id }).catch(() => {}), 1200); };
+  if (ok()) return doIt();
+  let n = 0; const t = setInterval(() => { n++; if (ok()) { clearInterval(t); doIt(); } else if (n > 120) clearInterval(t); }, 5000);
+  try { window.Capacitor.Plugins.App.addListener('resume', () => { clearInterval(t); doIt(); }); } catch (e) {}
+}
 /* Обновление „по въздуха“: изтегля новия код и го прилага при следващото отваряне — без нова инсталация */
 async function liveUpdate(me) {
   const up = UPD(); if (!up || !REL || !REL.web || REL.code <= me) return false;
   const nat = await nativeBuild();
   if (REL.minNative > nat) return false; // нужна е нова версия на самото приложение
-  if (S.guide.liveReady === REL.code) return true;
   try {
-    const b = await up.download({ url: REL.web, version: String(REL.code) });
-    await up.next({ id: b.id });
-    S.guide.liveReady = REL.code; save();
-    toast('⬇️ Обновлението е изтеглено — ще се приложи при следващото отваряне');
+    let id = S.guide.liveReady === REL.code ? S.guide.liveId : null;
+    if (!id) {
+      const b = await up.download({ url: REL.web, version: String(REL.code) });
+      id = b.id; await up.next({ id });
+      S.guide.liveReady = REL.code; S.guide.liveId = id; save();
+    }
+    applyLive(up, id);
     return true;
   } catch (e) { return false; }
 }

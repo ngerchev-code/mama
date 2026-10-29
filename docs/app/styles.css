@@ -519,3 +519,12 @@ label.btn { cursor: pointer; }
 .cb-btn.off { background: rgba(255,255,255,.55); opacity: .6; }
 .cb-btn.red { background: #ef4444; } .cb-btn.green { background: #22c55e; animation: cdot 1.2s infinite; }
 nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e62; }
+
+/* ═══ Валежи ═══ */
+.wx-rain { margin: 10px 0 4px; padding: 10px 12px; border-radius: 14px; font-size: 14.5px; line-height: 1.4; }
+.wx-rain.dry { background: #fff7e0; color: #7a5a00; }
+.wx-rain.wet { background: #e6f0ff; color: #1e3a8a; }
+.wx-bars { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; height: 56px; margin: 8px 0 4px; }
+.wx-bars div { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+.wx-bars i { display: block; width: 100%; border-radius: 4px 4px 2px 2px; }
+.wx-bars span { font-size: 10px; color: var(--muted, #6b7a75); margin-top: 2px; }

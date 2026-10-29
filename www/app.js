@@ -290,7 +290,7 @@ async function loadWeather() {
     if (ci && ci[5] != null) { c = { lat: ci[5], lon: ci[6] }; place = ci[1]; }
     else { c = { lat: 42.698, lon: 23.322 }; place = 'гр. София'; }
   }
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FSofia&forecast_days=5`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&hourly=precipitation,precipitation_probability,weather_code&minutely_15=precipitation&forecast_minutely_15=24&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe%2FSofia&forecast_days=5`;
   try {
     const r = await fetch(url); if (!r.ok) throw 0;
     const v = await r.json(); v.place = place;
@@ -309,7 +309,57 @@ function weatherCard() {
   return `<div class="card"><h2>🌤️ Времето <span class="muted small" style="font-weight:400">· ${esc(w.place)}</span></h2>
     <div class="wx-now"><div class="ico">${ico}</div><div><div class="big">${Math.round(cur.temperature_2m)}°C</div>
     <div class="muted small">${esc(txt)} · усеща се ${Math.round(cur.apparent_temperature)}° · вятър ${Math.round(cur.wind_speed_10m)} км/ч</div></div></div>
-    <div class="wx-days">${days}</div></div>`;
+    ${rainHTML(w)}
+    <div class="wx-days">${days}</div>
+    <div class="muted small" style="margin-top:6px;text-align:right">обновено в ${new Date((S.cache.weather && S.cache.weather.t) || Date.now()).toTimeString().slice(0, 5)} · на всеки 30 мин</div></div>`;
+}
+/* ─── Валежи: кога, колко дълго, колко ─── */
+const SNOW_C = [71, 73, 75, 77, 85, 86];
+function rainWindows(w) {
+  const h = w.hourly; if (!h || !h.time) return [];
+  const now = Date.now(), out = []; let cur = null;
+  for (let i = 0; i < h.time.length; i++) {
+    const t = new Date(h.time[i]).getTime(); if (t + 3600e3 <= now) continue; if (t > now + 36 * 3600e3) break;
+    const mm = h.precipitation[i] || 0, pp = (h.precipitation_probability || [])[i] ?? 0;
+    const wet = mm >= 0.1 && pp >= 30;
+    if (wet) { if (!cur) cur = { s: Math.max(t, now), e: t + 3600e3, mm: 0, pp: 0, snow: false }; cur.e = t + 3600e3; cur.mm += mm; cur.pp = Math.max(cur.pp, pp); if (SNOW_C.includes(h.weather_code[i])) cur.snow = true; }
+    else if (cur) { out.push(cur); cur = null; }
+  }
+  if (cur) out.push(cur);
+  // уточняване на началото по 15-минутната прогноза
+  const m = w.minutely_15;
+  if (m && m.time && out[0]) {
+    for (let i = 0; i < m.time.length; i++) { const t = new Date(m.time[i]).getTime(); if (t + 900e3 < now) continue; if ((m.precipitation[i] || 0) >= 0.05) { if (Math.abs(t - out[0].s) < 2 * 3600e3) out[0].s = Math.max(now, t); break; } }
+  }
+  return out;
+}
+function hm(t) { return new Date(t).toTimeString().slice(0, 5); }
+function dayWord(t) { const d = new Date(t), n = new Date(); const dd = Math.round((new Date(d.toDateString()) - new Date(n.toDateString())) / 864e5); return dd === 0 ? 'днес' : dd === 1 ? 'утре' : WD[d.getDay()]; }
+function durTxt(ms) { const mins = Math.round(ms / 60000); if (mins < 60) return `${mins} мин`; const h = Math.floor(mins / 60), r = mins % 60; return r >= 30 ? `${h},5 ч` : `${h} ч`; }
+function rainHTML(w) {
+  const W = rainWindows(w), now = Date.now();
+  const cur = w.current, rainingNow = (cur.precipitation || 0) > 0 || (W[0] && W[0].s <= now + 60e3);
+  let head;
+  if (!W.length && !rainingNow) head = `<div class="wx-rain dry">☀️ <b>Без валежи</b> в следващите 36 часа</div>`;
+  else {
+    const a = W[0] || { s: now, e: now + 3600e3, mm: cur.precipitation || 0.2, pp: 70, snow: SNOW_C.includes(cur.weather_code) };
+    const what = a.snow ? 'Сняг' : 'Дъжд', ic = a.snow ? '🌨️' : '🌧️';
+    const amt = a.mm >= 0.1 ? ` · ~${a.mm < 1 ? a.mm.toFixed(1) : Math.round(a.mm)} мм` : '';
+    head = rainingNow
+      ? `<div class="wx-rain wet">${ic} <b>${a.snow ? 'Вали сняг' : 'Вали'} сега</b> · спира около <b>${hm(a.e)}</b> (още ${durTxt(a.e - now)})${amt}</div>`
+      : `<div class="wx-rain wet">${ic} <b>${what} ${dayWord(a.s)} от ${hm(a.s)} до ${hm(a.e)}</b><br><span class="small">продължителност ${durTxt(a.e - a.s)}${amt} · вероятност ${a.pp}% · започва след ${durTxt(a.s - now)}</span></div>`;
+    const more = W.slice(rainingNow && W[0] && W[0].s <= now + 60e3 ? 1 : 1, 3).map(x => `<div class="small muted">След това: ${x.snow ? 'сняг' : 'дъжд'} ${dayWord(x.s)} ${hm(x.s)}–${hm(x.e)} (${durTxt(x.e - x.s)}${x.mm >= 0.5 ? `, ~${Math.round(x.mm)} мм` : ''})</div>`).join('');
+    head += more;
+  }
+  // лента за следващите 12 часа
+  const h = w.hourly; let bars = '';
+  if (h && h.time) {
+    const start = h.time.findIndex(t => new Date(t).getTime() + 3600e3 > now);
+    const sl = start < 0 ? [] : h.time.slice(start, start + 12).map((t, k) => ({ t, mm: h.precipitation[start + k] || 0, pp: (h.precipitation_probability || [])[start + k] ?? 0, sn: SNOW_C.includes(h.weather_code[start + k]) }));
+    const mx = Math.max(1, ...sl.map(x => x.mm));
+    bars = sl.length ? `<div class="wx-bars" aria-label="Валежи по часове">${sl.map(x => `<div title="${hm(new Date(x.t))}: ${x.mm.toFixed(1)} мм, ${x.pp}%"><i style="height:${x.mm >= 0.1 ? Math.max(12, x.mm / mx * 100) : 4}%;background:${x.mm >= 0.1 ? (x.sn ? '#7dd3fc' : '#3b82f6') : '#d6dfe5'};opacity:${x.mm >= 0.1 ? Math.max(.45, x.pp / 100) : 1}"></i><span>${new Date(x.t).getHours()}</span></div>`).join('')}</div>` : '';
+  }
+  return head + bars;
 }
 
 /* ─── Меню за седмицата ─────────────────────────────────────────────────── */
@@ -909,5 +959,8 @@ function init() {
   }
   go('home', false);
   loadData().then(loadWeather);
+  // прогнозата се обновява на всеки 30 минути и при връщане в приложението
+  setInterval(() => { if (!document.hidden) { S.cache.weather = null; loadWeather(); } }, 30 * 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadWeather(); });
 }
 document.addEventListener('DOMContentLoaded', init);

@@ -41,6 +41,8 @@ function weatherCase() {
   if (snowC.includes(code) || (d0 && snowC.includes(d0.code) && h < 18)) return 'snow';
   if (t <= 0 || feel <= -3) return 'cold';
   if (rainC.includes(code) || (c.precipitation || 0) > 0.3) return 'rain';
+  const RW = rainWindows(w)[0];
+  if (RW && RW.s - Date.now() < 2 * 3600e3) return RW.snow ? 'snow' : 'rain';
   if (m >= 5 && m <= 8 && h >= 11 && h <= 17 && (t >= 32 || feel >= 33)) return 'heat';
   return null;
 }
