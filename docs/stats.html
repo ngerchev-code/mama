@@ -97,7 +97,7 @@ async function load() {
   const vals = days.map(d => dv['d-' + ymd(d)]), max = Math.max(1, ...vals);
   $('dau').textContent = fmt(vals[vals.length - 1]);
   $('dauSplit').textContent = plats.slice(0, 3).filter(p => v['d-' + p + '-' + today]).map(p => PL[p] + ' ' + v['d-' + p + '-' + today]).join(' · ');
-  $('chart').innerHTML = days.map((d, i) => `<div class="bar${i === 13 ? ' today' : ''}" title="${d.toLocaleDateString('bg-BG')}: ${vals[i]}"><b>${vals[i] || ''}</b><i style="height:${vals[i] / max * 100}%"></i><span>${d.getDate()}.${pad(d.getMonth() + 1)}</span></div>`).join('');
+  $('chart').innerHTML = days.map((d, i) => `<div class="bar${i === 13 ? ' today' : ''}" title="${d.toLocaleDateString('bg-BG')}: ${vals[i]}"><b>${vals[i] || ''}</b><i style="height:${vals[i] / max * 100}%"></i><span>${d.getDate()}</span></div>`).join('');
 
   const vk = []; for (let n = latest; n > Math.max(0, latest - 6); n--) vk.push(n);
   const vv = await many(vk.map(n => 'v-' + n));
