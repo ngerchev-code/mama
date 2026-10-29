@@ -160,7 +160,7 @@ function showGreeting() {
   el.innerHTML = `<span class="greet-e">${g.e}</span><div><b>${esc(g.t)}</b>${g.s ? `<div class="small">${esc(g.s)}</div>` : ''}</div>`;
   document.body.appendChild(el);
   requestAnimationFrame(() => el.classList.add('in'));
-  setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 400); }, 4500);
+  setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 400); }, 6000);
   el.onclick = () => { el.classList.remove('in'); setTimeout(() => el.remove(), 300); };
   if (current === 'home') { const sub = $('#subtitle'); if (sub && (P().name || '').trim()) sub.textContent = `${g.e} ${g.t}`; }
   // имен ден — голям празничен прозорец веднъж в деня

@@ -392,3 +392,15 @@ label.btn { cursor: pointer; }
 .cal-d.ev { background: rgba(255, 154, 61, .22); font-weight: 700; }
 .cal-d .evdot { position: absolute; top: 4px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: #ff6b4a; }
 .bars.wide .bar { grid-template-columns: 150px 1fr 56px; }
+
+/* ═══ Поздрав v2: лилав, полупрозрачен, по-голям ═══ */
+.greet { left: 14px; right: 14px; max-width: 460px; margin: 0 auto; top: calc(70px + var(--safe-t)); gap: 14px; padding: 16px 18px 16px 14px;
+  border-radius: 24px; color: #fff;
+  background: linear-gradient(135deg, rgba(124, 58, 237, .78), rgba(168, 85, 247, .70) 60%, rgba(217, 70, 239, .66));
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,.28); box-shadow: 0 16px 40px rgba(76, 29, 149, .28);
+  transform: translateY(-24px) scale(.96); opacity: 0; transition: transform .5s cubic-bezier(.2,1.2,.4,1), opacity .4s; }
+.greet.in { transform: none; opacity: 1; }
+.greet b { font-size: 18px; line-height: 1.25; display: block; }
+.greet .small { font-size: 14px; opacity: .9; margin-top: 2px; }
+.greet-e { font-size: 34px; width: 56px; height: 56px; border-radius: 18px; background: rgba(255,255,255,.2); }

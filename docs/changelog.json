@@ -1,7 +1,15 @@
 {
-  "latest": 13,
+  "latest": 14,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 14,
+      "date": "2026-10-29",
+      "title": "Нов поздрав",
+      "items": [
+        "💜 Поздравът при влизане е по-голям, лилав и леко прозрачен"
+      ]
+    },
     {
       "code": 13,
       "date": "2026-10-29",
