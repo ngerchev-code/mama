@@ -1,3 +1,5 @@
+/* © 2026 Николай Герчев — MAMA. Всички права запазени. */
+try { const u = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater; if (u) u.notifyAppReady(); } catch (e) {}
 /* MAMA — проверка за нова версия и „Какво ново“. */
 'use strict';
 const UPD_URL = 'https://raw.githubusercontent.com/ngerchev-code/mama/main/docs/changelog.json';
@@ -8,13 +10,34 @@ async function myBuild() {
   try { const r = await fetch('build.json', { cache: 'no-store' }); if (r.ok) BUILD = (await r.json()).code || 0; } catch (e) { BUILD = 0; }
   return BUILD;
 }
+let REL = null; // { code, web, minNative }
 async function latestRelease() {
   try {
     const r = await fetch('https://api.github.com/repos/ngerchev-code/mama/releases/latest', { cache: 'no-store' });
     if (!r.ok) return 0;
     const d = await r.json(); const m = /(\d+)$/.exec(d.tag_name || '');
-    return m && (d.assets || []).some(a => a.name === 'MAMA.apk') ? +m[1] : 0;
+    if (!m || !(d.assets || []).some(a => a.name === 'MAMA.apk')) return 0;
+    const web = (d.assets || []).find(a => a.name === 'web.zip');
+    const mn = /minNative:\s*(\d+)/.exec(d.body || '');
+    REL = { code: +m[1], web: web ? web.browser_download_url : null, minNative: mn ? +mn[1] : +m[1] };
+    return +m[1];
   } catch (e) { return 0; }
+}
+function UPD() { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater; }
+async function nativeBuild() { try { const i = await window.Capacitor.Plugins.App.getInfo(); return +i.build || 0; } catch (e) { return 0; } }
+/* Обновление „по въздуха“: изтегля новия код и го прилага при следващото отваряне — без нова инсталация */
+async function liveUpdate(me) {
+  const up = UPD(); if (!up || !REL || !REL.web || REL.code <= me) return false;
+  const nat = await nativeBuild();
+  if (REL.minNative > nat) return false; // нужна е нова версия на самото приложение
+  if (S.guide.liveReady === REL.code) return true;
+  try {
+    const b = await up.download({ url: REL.web, version: String(REL.code) });
+    await up.next({ id: b.id });
+    S.guide.liveReady = REL.code; save();
+    toast('⬇️ Обновлението е изтеглено — ще се приложи при следващото отваряне');
+    return true;
+  } catch (e) { return false; }
 }
 async function changelog() {
   try { const r = await fetch(UPD_URL + '?t=' + Math.floor(Date.now() / 600000), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) { /* без интернет */ }
@@ -43,7 +66,8 @@ async function checkUpdates(manual) {
     if (me && !seen) { S.guide.seenBuild = me; save(); }
     // 2) Има по-нова версия (готов APK в Releases) → предложение за обновяване
     const rel = await latestRelease();
-    if (me && rel > me) {
+    if (me && rel > me && await liveUpdate(me)) { if (manual) toast('Новата версия ще се зареди при следващото отваряне'); return; }
+    if (me && rel > me && REL && REL.minNative > await nativeBuild()) {
       cl.latest = rel;
       if (!manual && daysSince(S.guide.last.upd) < 1) return;
       const vs = newsList(cl, me, cl.latest);

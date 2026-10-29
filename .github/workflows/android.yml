@@ -3,7 +3,7 @@ name: Android APK
 on:
   push:
     branches: [main]
-    paths: ["www/**", "android/**", "package.json", "capacitor.config.json", ".github/workflows/android.yml"]
+    paths: ["www/**", "android/**", "tools/**", "package.json", "capacitor.config.json", ".github/workflows/android.yml"]
   workflow_dispatch:
 
 permissions:
@@ -35,9 +35,14 @@ jobs:
 
       - name: Зависимости и синхронизация
         run: |
+          echo "MIN_NATIVE=$(cat android/NATIVE_VERSION)" >> "$GITHUB_ENV"
           echo "{\"code\": ${{ github.run_number }}}" > www/build.json
           cat www/build.json
           npm ci
+          sh tools/minify.sh www
+          echo "{\"code\": ${{ github.run_number }}, \"minNative\": $(cat android/NATIVE_VERSION)}" > update.json
+          (cd www && zip -qr ../web.zip .)
+          ls -la web.zip update.json
           npx cap sync android
 
       - name: Компилиране (APK + AAB за Google Play)
@@ -66,8 +71,12 @@ jobs:
           body: |
             MAMA — My Amazing Market Area. Свали **MAMA.apk** на телефона и го инсталирай. Постоянен линк към последната версия: https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk
             Файлът .aab е за качване в Google Play Console.
+            Инсталираното приложение получава новия код автоматично (web.zip) — без нова инсталация.
+            minNative: ${{ env.MIN_NATIVE }}
           files: |
             MAMA.apk
+            web.zip
+            update.json
             MAMA-*.apk
             MAMA-*.aab
 

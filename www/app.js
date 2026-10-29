@@ -876,7 +876,7 @@ function renderSettings(el) {
       <div class="muted small" style="margin-top:8px">Източник: ${esc(D.meta ? D.meta.source : 'КЗП „Колко струва“')}</div></div>
     <div class="card"><h2>💾 Резервно копие</h2><div class="muted small">Списък, покупки, менюта и настройки.</div>
       <div class="row" style="margin-top:10px;gap:8px"><button class="btn tonal small" id="exp">Копирай</button><button class="btn tonal small" id="imp">Възстанови</button><button class="btn tonal small" id="rst" style="color:var(--bad)">Изтрий всичко</button></div></div>
-    <div class="muted small" style="text-align:center">MAMA — My Amazing Market Area · версия 1.0</div>`;
+    <div class="muted small" style="text-align:center">MAMA — My Amazing Market Area · версия 1.0<br>© 2026 Николай Герчев. Всички права запазени.</div>`;
   el.querySelector('#sc').onclick = pickCity;
   el.querySelector('#dsave').onclick = () => { S.settings.dataUrl = el.querySelector('#du').value.trim() || DEFAULT_DATA_URL; save(); loadData(true); toast('Запазено'); };
   el.querySelector('#dref').onclick = () => { loadData(true); toast('Обновяване…'); };
