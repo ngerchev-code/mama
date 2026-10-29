@@ -291,13 +291,36 @@ def medians_of(zpath: Path) -> dict[str, dict[str, float]]:
     return out
 
 
-def build_today(zpath: Path, day: date, out: Path, ekatte: dict):
+FRESH_DAYS = 7  # верига без данни днес → последният ѝ ден до 7 дни назад
+
+
+def iter_fresh(zips: Path, days: list[date]):
+    """Редовете на всяка верига от най-новия ден, в който е подала данни."""
+    done: set[str] = set()
+    used: dict[str, str] = {}
+    for d in sorted(days, reverse=True)[:FRESH_DAYS]:
+        zp = zips / f"{d.isoformat()}.zip"
+        if not zp.exists():
+            continue
+        seen: set[str] = set()
+        for row in iter_rows(zp):
+            if row[0] in done:
+                continue
+            seen.add(row[0])
+            used[row[0]] = d.isoformat()
+            yield row
+        done |= seen
+    log("  дни по вериги: " + ", ".join(f"{c}={v}" for c, v in sorted(used.items())))
+    iter_fresh.used = used
+
+
+def build_today(zips: Path, days: list[date], day: date, out: Path, ekatte: dict):
     chains: dict[str, str] = {}
     city_items: dict[str, dict[tuple[str, str], list]] = {}
     city_stores: dict[str, dict[str, set]] = {}
     nat: dict[tuple[str, int], list[float]] = {}
     promos: dict[str, list[int]] = {}
-    for cid, cname, ek, store, name, cat, price, retail, is_promo in iter_rows(zpath):
+    for cid, cname, ek, store, name, cat, price, retail, is_promo in iter_fresh(zips, days):
         chains[cid] = cname
         nat.setdefault((cid, cat), []).append(price)
         pc = promos.setdefault(cid, [0, 0])
@@ -346,6 +369,7 @@ def build_today(zpath: Path, day: date, out: Path, ekatte: dict):
         "date": day.isoformat(),
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "chains": chains,
+        "chainDates": getattr(iter_fresh, "used", {}),
         "categories": {str(k): v for k, v in CATEGORIES.items()},
         "groups": [{"id": g, "name": n, "cats": c} for g, n, c in GROUPS],
         "cities": cities,
@@ -437,7 +461,7 @@ def main():
     ekatte = json.loads((HERE / "ekatte.json").read_text(encoding="utf-8"))
     today = date.fromisoformat(a.today) if a.today else datetime.now(timezone.utc).date()
     have_hist = a.prev and (a.prev / "v1" / "hist.json").exists()
-    span = 4 if have_hist else BACKFILL_DAYS
+    span = FRESH_DAYS if have_hist else BACKFILL_DAYS
     days = []
     log("Сваляне на архивите на КЗП…")
     for back in range(span + 1):
@@ -450,7 +474,7 @@ def main():
         sys.exit(3)
     latest = max(days)
     log(f"Най-нови данни: {latest}")
-    build_today(a.zips / f"{latest.isoformat()}.zip", latest, a.out, ekatte)
+    build_today(a.zips, days, latest, a.out, ekatte)
     build_history(a.prev, a.zips, sorted(days), a.out)
     if not a.no_net:
         build_news(a.out, a.prev)
