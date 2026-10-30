@@ -1,5 +1,5 @@
 /* MAMA — офлайн кеш за уеб версията (iPhone / компютър). */
-const CACHE = 'mama-v21';
+const CACHE = 'mama-v22';
 const SHELL = ['./', './index.html', './styles.css', './data.js', './app.js', './doctor.js', './world.js', './guide.js', './update.js', './doctor2.js', './doctor3.js', './extras.js', './shop2.js', './events.js', './holidays.js', './scanner.js', './vendor/zxing.min.js',
   './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

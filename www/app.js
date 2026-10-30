@@ -277,7 +277,7 @@ function getCoords() {
     navigator.geolocation.getCurrentPosition(p => {
       const c = { lat: +p.coords.latitude.toFixed(3), lon: +p.coords.longitude.toFixed(3), t: Date.now() };
       S.settings.coords = c; save(); res(c);
-    }, () => res(null), { enableHighAccuracy: false, timeout: 9000, maximumAge: 30 * 60000 });
+    }, () => res(S.settings.coords || null), { enableHighAccuracy: false, timeout: 9000, maximumAge: 30 * 60000 });
   });
 }
 async function loadWeather() {
@@ -291,9 +291,12 @@ async function loadWeather() {
     else { c = { lat: 42.698, lon: 23.322 }; place = 'гр. София'; }
   }
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&hourly=precipitation,precipitation_probability,weather_code&minutely_15=precipitation&forecast_minutely_15=24&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe%2FSofia&forecast_days=5`;
+  const WXM = ['ecmwf_ifs025', 'icon_seamless', 'gfs_seamless', 'meteofrance_seamless', 'ukmo_seamless'];
+  const url2 = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&hourly=temperature_2m,precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&models=${WXM.join(',')}&timezone=Europe%2FSofia&forecast_days=5`;
   try {
-    const r = await fetch(url); if (!r.ok) throw 0;
+    const [r, r2] = await Promise.all([fetch(url), fetch(url2).catch(() => null)]); if (!r.ok) throw 0;
     const v = await r.json(); v.place = place;
+    try { if (r2 && r2.ok) wxConsensus(v, await r2.json(), WXM); } catch (e) { /* само основният модел */ }
     D.weather = v; S.cache.weather = { t: Date.now(), v }; save();
   } catch (e) { D.weather = cached ? cached.v : null; D.weatherFail = !D.weather; }
   if (current === 'home') render();
@@ -311,8 +314,43 @@ function weatherCard() {
     <div class="muted small">${esc(txt)} · усеща се ${Math.round(cur.apparent_temperature)}° · вятър ${Math.round(cur.wind_speed_10m)} км/ч</div></div></div>
     ${rainHTML(w)}
     <div class="wx-days">${days}</div>
+    ${w.cons ? `<div class="wx-cons">📡 Сравнени ${w.cons.models.length} модела: ${esc(w.cons.models.join(', '))} · увереност <b>${w.cons.conf}</b></div>` : ''}
     <div class="muted small" style="margin-top:6px;text-align:right">обновено в ${new Date((S.cache.weather && S.cache.weather.t) || Date.now()).toTimeString().slice(0, 5)} · на всеки 30 мин</div></div>`;
 }
+/* ─── Консенсус от няколко метеорологични модела ─── */
+const WX_NAMES = { ecmwf_ifs025: 'ECMWF', icon_seamless: 'ICON (DWD)', gfs_seamless: 'GFS (NOAA)', meteofrance_seamless: 'Météo-France', ukmo_seamless: 'UK Met Office' };
+const med = a => { const b = a.filter(x => x != null && !isNaN(x)).sort((x, y) => x - y); if (!b.length) return null; const k = b.length >> 1; return b.length % 2 ? b[k] : (b[k - 1] + b[k]) / 2; };
+function wxConsensus(v, m, models) {
+  const H = m.hourly, have = models.filter(k => H && H['precipitation_' + k] && H['precipitation_' + k].some(x => x != null));
+  if (have.length < 2 || !v.hourly) return;
+  const idx = new Map(H.time.map((t, i) => [t, i]));
+  v.hourly.precip_bm = v.hourly.precipitation.slice();
+  v.hourly.agree = []; v.hourly.nmod = [];
+  v.hourly.time.forEach((t, i) => {
+    const j = idx.get(t); if (j == null) { v.hourly.agree[i] = null; return; }
+    const vals = have.map(k => H['precipitation_' + k][j]).filter(x => x != null);
+    const wet = vals.filter(x => x >= 0.1);
+    const ag = vals.length ? wet.length / vals.length : 0;
+    v.hourly.agree[i] = ag; v.hourly.nmod[i] = vals.length;
+    const bm = v.hourly.precip_bm[i] || 0, pp = (v.hourly.precipitation_probability || [])[i];
+    // мокър час: мнозинството модели или основният + висока вероятност
+    const isWet = ag >= 0.5 || (bm >= 0.1 && (pp ?? 0) >= 60 && ag >= 0.34);
+    v.hourly.precipitation[i] = isWet ? Math.max(0.1, med([bm, ...wet])) : 0;
+    if (v.hourly.precipitation_probability) v.hourly.precipitation_probability[i] = Math.round(((pp ?? ag * 100) + ag * 100) / 2);
+  });
+  // дневни температури — медиана от всички модели + основния
+  const Dm = m.daily; let spread = [];
+  if (Dm && v.daily) v.daily.time.forEach((t, i) => {
+    const j = Dm.time.indexOf(t); if (j < 0) return;
+    const mx = have.map(k => (Dm['temperature_2m_max_' + k] || [])[j]), mn = have.map(k => (Dm['temperature_2m_min_' + k] || [])[j]);
+    const a = med([v.daily.temperature_2m_max[i], ...mx]), b = med([v.daily.temperature_2m_min[i], ...mn]);
+    if (a != null) v.daily.temperature_2m_max[i] = a; if (b != null) v.daily.temperature_2m_min[i] = b;
+    const ok = mx.filter(x => x != null); if (ok.length > 1 && i < 3) spread.push(Math.max(...ok) - Math.min(...ok));
+  });
+  const sp = spread.length ? Math.max(...spread) : 0;
+  v.cons = { models: have.map(k => WX_NAMES[k] || k), conf: sp <= 2.5 ? 'висока' : sp <= 5 ? 'средна' : 'ниска', spread: Math.round(sp) };
+}
+
 /* ─── Валежи: кога, колко дълго, колко ─── */
 const SNOW_C = [71, 73, 75, 77, 85, 86];
 function rainWindows(w) {
@@ -322,7 +360,7 @@ function rainWindows(w) {
     const t = new Date(h.time[i]).getTime(); if (t + 3600e3 <= now) continue; if (t > now + 36 * 3600e3) break;
     const mm = h.precipitation[i] || 0, pp = (h.precipitation_probability || [])[i] ?? 0;
     const wet = mm >= 0.1 && pp >= 30;
-    if (wet) { if (!cur) cur = { s: Math.max(t, now), e: t + 3600e3, mm: 0, pp: 0, snow: false }; cur.e = t + 3600e3; cur.mm += mm; cur.pp = Math.max(cur.pp, pp); if (SNOW_C.includes(h.weather_code[i])) cur.snow = true; }
+    if (wet) { if (!cur) cur = { s: Math.max(t, now), e: t + 3600e3, mm: 0, pp: 0, snow: false, ag: 0, n: 0 }; cur.e = t + 3600e3; cur.mm += mm; cur.pp = Math.max(cur.pp, pp); if (h.agree && h.agree[i] != null) { cur.ag = Math.max(cur.ag, h.agree[i]); cur.n = h.nmod[i]; } if (SNOW_C.includes(h.weather_code[i])) cur.snow = true; }
     else if (cur) { out.push(cur); cur = null; }
   }
   if (cur) out.push(cur);
@@ -347,7 +385,7 @@ function rainHTML(w) {
     const amt = a.mm >= 0.1 ? ` · ~${a.mm < 1 ? a.mm.toFixed(1) : Math.round(a.mm)} мм` : '';
     head = rainingNow
       ? `<div class="wx-rain wet">${ic} <b>${a.snow ? 'Вали сняг' : 'Вали'} сега</b> · спира около <b>${hm(a.e)}</b> (още ${durTxt(a.e - now)})${amt}</div>`
-      : `<div class="wx-rain wet">${ic} <b>${what} ${dayWord(a.s)} от ${hm(a.s)} до ${hm(a.e)}</b><br><span class="small">продължителност ${durTxt(a.e - a.s)}${amt} · вероятност ${a.pp}% · започва след ${durTxt(a.s - now)}</span></div>`;
+      : `<div class="wx-rain wet">${ic} <b>${what} ${dayWord(a.s)} от ${hm(a.s)} до ${hm(a.e)}</b><br><span class="small">продължителност ${durTxt(a.e - a.s)}${amt} · вероятност ${a.pp}%${a.n ? ` · ${Math.round(a.ag * a.n)} от ${a.n} модела` : ''} · започва след ${durTxt(a.s - now)}</span></div>`;
     const more = W.slice(rainingNow && W[0] && W[0].s <= now + 60e3 ? 1 : 1, 3).map(x => `<div class="small muted">След това: ${x.snow ? 'сняг' : 'дъжд'} ${dayWord(x.s)} ${hm(x.s)}–${hm(x.e)} (${durTxt(x.e - x.s)}${x.mm >= 0.5 ? `, ~${Math.round(x.mm)} мм` : ''})</div>`).join('');
     head += more;
   }

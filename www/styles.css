@@ -539,3 +539,4 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .bf-st { padding: 8px 12px 8px 30px; font-size: 13.5px; }
 .bf-st li { margin: 3px 0; }
 .bf-why { font-size: 13.5px; font-weight: 700; }
+.wx-cons { margin-top: 8px; font-size: 12.5px; color: var(--muted, #5d6b66); background: var(--surface-2, #f1f6f3); border-radius: 12px; padding: 7px 10px; line-height: 1.4; }

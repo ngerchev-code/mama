@@ -1,7 +1,17 @@
 {
-  "latest": 22,
+  "latest": 23,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 23,
+      "date": "2026-10-30",
+      "title": "По-точна прогноза",
+      "items": [
+        "📡 Прогнозата сравнява 5 водещи модела — ECMWF, ICON (DWD), GFS, Météo-France, UK Met Office",
+        "🌧️ Дъжд се показва, когато мнозинството модели са съгласни — „3 от 5 модела“",
+        "🎯 Температурите са медиана от всички модели + оценка на увереността"
+      ]
+    },
     {
       "code": 22,
       "date": "2026-10-30",
