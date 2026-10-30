@@ -1,9 +1,9 @@
 {
-  "latest": 30,
+  "latest": 31,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
     {
-      "code": 30,
+      "code": 31,
       "date": "2026-10-30",
       "title": "Салатен бар",
       "items": [
