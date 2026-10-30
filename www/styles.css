@@ -560,3 +560,4 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .th-tip { background: rgba(255,255,255,.92); color: #4a2a66; border-radius: 14px; padding: 9px 12px; font-size: 13.5px; line-height: 1.45; text-align: left; }
 .sheet .th-tip { background: #f6f0ff; margin-top: 10px; }
 .card.des-hero { background: linear-gradient(135deg, #f472b6, #fb7185 55%, #fbbf24); color: #fff; border: 0; }
+.card.sal-hero { background: linear-gradient(135deg, #16a34a, #65a30d 55%, #facc15); color: #fff; border: 0; }
