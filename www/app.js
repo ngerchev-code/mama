@@ -47,6 +47,7 @@ function isoWeek(d = new Date()) {
   return `${t.getUTCFullYear()}-W${String(Math.ceil(((t - y0) / 86400000 + 1) / 7)).padStart(2, '0')}`;
 }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2400); }
+const FIT_URL = 'https://claude.ai/artifact/R6vfFsADu2z9VSBxmjvpZW'; // FIT — Fitness Intelligent Team
 function openExt(url) { if (NATIVE) window.location.href = url; else window.open(url, '_blank', 'noopener'); }
 function chainName(id) { return (D.meta && D.meta.chains && D.meta.chains[id]) || (CHAIN_INFO[id] && CHAIN_INFO[id].name) || id; }
 function chainBadge(id) {
@@ -541,6 +542,7 @@ function renderHome(el) {
       <button data-go2="online"><span class="ic">🌐</span>eBay и онлайн</button>
       <button data-go2="banned"><span class="ic">⛔</span>Забранени</button>
       <button data-go2="doctor"><span class="ic">🩺</span>My Doctor</button>
+      <button data-url="${FIT_URL}"><span class="ic">💪</span>FIT · тренировки</button>
     </div>
     <div class="card"><h2>🛒 Списък за пазар <button class="more" data-go2="list">Отвори</button></h2>
       ${open.length ? (est.best ? `<div class="row"><div class="grow">Най-изгодно: <b>${esc(chainName(est.best.ch))}</b><div class="muted small">${est.best.covered} от ${open.length} продукта с цени · ${esc(ci ? ci[1] : '')}</div></div><div class="price">~${eur(est.best.total)}</div></div>`
@@ -814,7 +816,7 @@ function renderMore(el) {
     ['banned', '⛔', 'Забранени храни', 'Избери вредните храни, които да избягваш'],
     ['settings', '⚙️', 'Настройки', 'Град, данни, резервно копие'],
   ];
-  el.innerHTML = `<div class="card"><ul class="list">${items.map(([id, e, t, d]) => `<li class="li" data-go2="${id}"><div class="lead">${e}</div><div class="grow"><div class="title">${t}</div><div class="muted small">${d}</div></div><span class="muted">›</span></li>`).join('')}</ul></div>
+  el.innerHTML = `<div class="card"><ul class="list"><li class="li" data-url="${FIT_URL}"><div class="lead">💪</div><div class="grow"><div class="title">FIT — Fitness Intelligent Team</div><div class="muted small">Тренировки за начинаещи, скенер на уреди, 12-седмична програма</div></div><span class="muted">↗</span></li>${items.map(([id, e, t, d]) => `<li class="li" data-go2="${id}"><div class="lead">${e}</div><div class="grow"><div class="title">${t}</div><div class="muted small">${d}</div></div><span class="muted">›</span></li>`).join('')}</ul></div>
     <div class="card"><h2>За MAMA</h2><div class="small muted">MAMA — My Amazing Market Area. Цените идват от отворените данни на Комисията за защита на потребителите (портал „Колко струва“), които големите вериги подават всеки ден по закон. Прогнозата за времето е от Open-Meteo. Всички твои данни (списък, покупки, статистика) се пазят само на телефона.</div></div>`;
   bindCommon(el);
 }
