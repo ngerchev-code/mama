@@ -540,3 +540,13 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .bf-st li { margin: 3px 0; }
 .bf-why { font-size: 13.5px; font-weight: 700; }
 .wx-cons { margin-top: 8px; font-size: 12.5px; color: var(--muted, #5d6b66); background: var(--surface-2, #f1f6f3); border-radius: 12px; padding: 7px 10px; line-height: 1.4; }
+
+/* ═══ Моята книга с рецепти ═══ */
+#sheetBody { position: relative; }
+.book-heart { position: absolute; right: 10px; top: 10px; z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+.book-heart.on { animation: heartPop .35s; }
+@keyframes heartPop { 50% { transform: scale(1.25); } }
+.card.book-card { background: linear-gradient(135deg, #fff4e8, #fde8f1); border: 0; }
+.book-n { margin-left: auto; font-size: 13px; font-weight: 800; color: #c2410c; background: #fff; border-radius: 999px; padding: 2px 10px; }
+.book-card h2 { display: flex; align-items: center; }
+.book-empty { font-size: 13.5px; color: #6b5a4a; }

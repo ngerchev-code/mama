@@ -58,7 +58,7 @@ function bfShow(skip = 0) {
   const name = (P().name || '').trim().split(' ')[0];
   S.guide.bf = todayISO(); save();
   popup({ theme: 'linear-gradient(140deg,#f76b1c 0%,#fa8f2c 55%,#f9a83a 100%)', emoji: b.e, kicker: `Добро утро${name ? ', ' + esc(name) : ''}! ☀️ Закуска на деня`, title: esc(b.n), text: bfHTML(b),
-    actions: [{ label: '😋 Супер, благодаря!', primary: true, fn: null }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => bfShow(skip + 1), 250) }] });
+    actions: [{ label: '😋 Супер, благодаря!', primary: true, fn: null }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => bfShow(skip + 1), 250) }, { label: '🤍 Запази в моята книга', fn: () => typeof toggleSave === 'function' && !isSaved('bf_' + b.i) && toggleSave('bf_' + b.i) }] });
 }
 function bfWindow() { const d = new Date(), mins = d.getHours() * 60 + d.getMinutes(); return mins >= 360 && mins <= 510; }
 function bfCheck() {

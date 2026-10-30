@@ -414,7 +414,7 @@ function tipAction(k) {
         if (first) first.insertAdjacentHTML('beforebegin', `<div class="tip-banner" id="worldCard" style="background:${THEMES.purple}"><div class="tip-emo">🌍</div><div class="grow"><b>Свят — ${CUISINES.length} кухни</b><div class="small">Сърбия, Турция, Гърция, Италия, Индия, Япония, Мексико…</div></div><div class="tip-go">›</div></div>`);
         const wc = el.querySelector('#worldCard'); if (wc) wc.onclick = () => go('world');
         // директорията — само любимите кухни и режима
-        const sub = el.querySelector('.card .muted.small');
+        const mc = el.querySelector('#reroll'); const sub = mc && mc.closest('.card') ? mc.closest('.card').querySelector('.muted.small') : null;
         const p = P();
         if (sub) sub.textContent = `3 ястия и 1 салата · ${p.cuisines.map(id => (CUISINES.find(c => c.id === id) || {}).f || '').join(' ')} · ${DIETS.find(d => d.id === p.diet).n.toLowerCase()} · без забранените храни`;
       }

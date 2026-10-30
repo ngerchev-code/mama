@@ -32,7 +32,7 @@ function mealShow(kind, skip = 0) {
   popup({ theme: isL ? 'linear-gradient(140deg,#0e9f6e 0%,#22c55e 60%,#84cc16 100%)' : 'linear-gradient(140deg,#4338ca 0%,#7c3aed 55%,#c026d3 100%)',
     emoji: groupIcon(r.group), kicker: `${isL ? '🍲 Обяд' : '🌙 Вечеря'}${nm()} · предложение за днес`, title: esc(r.name),
     text: `<div class="bf-meta">⏱️ ${r.time} мин · ${r.serv} порции${!isL && r.group === "salad" ? " · леко за вечерта" : ""}</div><ul class="bf-ing">${ing.map(i => `<li>${esc(i[0])}${i[1] && i[1] !== 'по вкус' ? ` — ${esc(i[1])}` : ''}</li>`).join('')}</ul>`,
-    actions: [{ label: '📖 Виж рецептата', primary: true, fn: () => setTimeout(() => showRecipe(r.id), 300) }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => mealShow(kind, skip + 1), 250) }, { label: 'Благодаря', fn: null }] });
+    actions: [{ label: '📖 Виж рецептата', primary: true, fn: () => setTimeout(() => showRecipe(r.id), 300) }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => mealShow(kind, skip + 1), 250) }, { label: '🤍 Запази в моята книга', fn: () => typeof toggleSave === 'function' && !isSaved(r.id) && toggleSave(r.id) }] });
 }
 function mealCheck() {
   if (!P().onboarded) return;
