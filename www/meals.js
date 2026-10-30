@@ -30,7 +30,7 @@ function mealShow(kind, skip = 0) {
   const ing = r.ing.filter(i => !/^(сол|пипер|черен пипер|вода)$/i.test(i[0])).slice(0, 6);
   const isL = kind === 'l';
   popup({ theme: isL ? 'linear-gradient(140deg,#0e9f6e 0%,#22c55e 60%,#84cc16 100%)' : 'linear-gradient(140deg,#4338ca 0%,#7c3aed 55%,#c026d3 100%)',
-    emoji: groupIcon(r.group), kicker: `${isL ? '🍲 Обяд' : '🌙 Вечеря'}${nm()} · предложение за днес`, title: esc(r.name),
+    emoji: groupIcon(r.group), kicker: (() => { const th = isL && !skip && typeof themeFor === 'function' && themeFor(); return th ? `${th.e} ${th.n} · обяд, ден ${th.day + 1}` : `${isL ? '🍲 Обяд' : '🌙 Вечеря'}${nm()} · предложение за днес`; })(), title: esc(r.name),
     text: `<div class="bf-meta">⏱️ ${r.time} мин · ${r.serv} порции${!isL && r.group === "salad" ? " · леко за вечерта" : ""}</div><ul class="bf-ing">${ing.map(i => `<li>${esc(i[0])}${i[1] && i[1] !== 'по вкус' ? ` — ${esc(i[1])}` : ''}</li>`).join('')}</ul>`,
     actions: [{ label: '📖 Виж рецептата', primary: true, fn: () => setTimeout(() => showRecipe(r.id), 300) }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => mealShow(kind, skip + 1), 250) }, { label: '🤍 Запази в моята книга', fn: () => typeof toggleSave === 'function' && !isSaved(r.id) && toggleSave(r.id) }] });
 }
@@ -60,7 +60,11 @@ async function scheduleMeals(ask) {
         if (at <= now) return;
         const r = mealPick(k, 0, at); if (!r) return;
         const body = k === 'b' ? `${r.e} ${r.n} · ${r.min} мин. Натисни за рецептата.` : k === 'l' ? `Днес предлагаме: ${r.name} (${r.time} мин). Натисни за рецептата 👉` : `Идея за вечерта: ${r.name} · ${r.time} мин. Виж как се прави 👉`;
-        list.push({ id: 1100 + day * 3 + j, channelId: 'meals', title: MEAL[k].ttl.replace('{N}', nm()), body, largeBody: body, schedule: { at, allowWhileIdle: true }, extra: { meal: k }, smallIcon: 'ic_stat_mama', iconColor: '#0E7A5C' });
+        let title = MEAL[k].ttl.replace('{N}', nm()), body2 = body;
+        const th = typeof themeFor === 'function' && themeFor(at);
+        if (th && k === 'b') { const td = themeDish(at); title = th.day === 0 ? `🎉 Започва ${th.n} ${th.e}` : `☀️ Добро утро${nm()}! ${th.e} ${th.n} · ден ${th.day + 1}`; body2 = `${td ? `За обяд днес: ${td.name}. ` : ''}Закуска: ${r.e} ${r.n}. Натисни за рецептите 👉`; }
+        if (th && k === 'l') { title = `${th.e} ${th.n} · време за обяд${nm()}!`; }
+        list.push({ id: 1100 + day * 3 + j, channelId: 'meals', title, body: body2, largeBody: body2, schedule: { at, allowWhileIdle: true }, extra: { meal: k }, smallIcon: 'ic_stat_mama', iconColor: '#0E7A5C' });
       });
     }
     if (list.length) await ln.schedule({ notifications: list });

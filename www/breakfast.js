@@ -51,7 +51,7 @@ function bfHTML(b) {
   return `<div class="bf-meta">⏱️ ${b.min} мин · ${esc(b.occ)}</div>
     <ul class="bf-ing">${b.ing.slice(0, 6).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <ol class="bf-st">${b.st.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
-    <div class="bf-why">💚 ${esc(b.why)}</div>`;
+    <div class="bf-why">💚 ${esc(b.why)}</div>${(() => { const th = typeof themeFor === 'function' && themeFor(), d = th && themeDish(); return th ? `<div class="th-tip" style="margin-top:10px">${th.e} <b>${esc(th.n)}</b>${d ? ` · за обяд днес: <b>${esc(d.name)}</b>` : ''}</div>` : ''; })()}`;
 }
 function bfShow(skip = 0) {
   const b = bfPick(skip);
