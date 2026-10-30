@@ -153,7 +153,7 @@ function ebagNudge() {
 }
 (function () {
   const bw = loadWeather;
-  loadWeather = async function () { await bw(); if (current === 'home') render(); setTimeout(ebagNudge, 2500); };
+  loadWeather = async function () { await bw(); if (current === 'home') render(); setTimeout(ebagNudge, 2500); scheduleWxNotif(); };
 })();
 
 /* ─── „Да пазаруваме заедно“ — приветлив помощник при влизане в Онлайн ─── */
@@ -234,5 +234,55 @@ function onlineWizard() {
     const r = bgo.apply(this, arguments);
     if (name === 'online' && prev !== 'online') setTimeout(onlineWizard, 260);
     return r;
+  };
+})();
+
+/* ─── Известия при лошо време (по последната прогноза) — подсеща за поръчка през eBag ─── */
+async function scheduleWxNotif() {
+  const ln = typeof LN === 'function' && LN(); const w = D.weather; if (!ln || !w || !w.hourly) return;
+  try {
+    const ids = []; for (let i = 0; i < 10; i++) ids.push({ id: 1200 + i });
+    await ln.cancel({ notifications: ids }).catch(() => {});
+    if (S.settings.wxNotif === false) return;
+    const st = await ln.checkPermissions(); if (st.display !== 'granted') return;
+    try { await ln.createChannel({ id: 'wx', name: 'Лошо време', description: 'Подсещане за поръчка от вкъщи при дъжд, сняг, студ и жега', importance: 4, visibility: 1, vibration: true }); } catch (e) {}
+    const now = Date.now(), list = [], usedDay = {}, hh = household(), kid = KID_PICKS[hh];
+    const kidTxt = kid ? ` ${hh === 'baby' ? '👶' : '🧒'} И за малките: ${kid.items.slice(0, 2).join(', ').toLowerCase()}.` : '';
+    const fit = t => { // без нощни известия: 22:00–07:00 → 07:30
+      const d = new Date(t); const h = d.getHours();
+      if (h >= 22) { d.setDate(d.getDate() + 1); d.setHours(7, 30, 0, 0); } else if (h < 7) d.setHours(7, 30, 0, 0);
+      return d;
+    };
+    const add = (at, key, title, body) => {
+      const day = at.toDateString(); if (usedDay[day] || at.getTime() < now + 5 * 60e3 || list.length >= 10) return;
+      usedDay[day] = 1;
+      list.push({ id: 1200 + list.length, channelId: 'wx', title, body: body + kidTxt, largeBody: body + kidTxt, schedule: { at, allowWhileIdle: true }, extra: { go: 'home' }, smallIcon: 'ic_stat_mama', iconColor: '#7C3AED' });
+    };
+    // дъжд и сняг — час преди началото
+    rainWindows(w).forEach(x => {
+      const at = fit(x.s - 3600e3); if (at.getTime() >= x.e) return;
+      const when = `${new Date(x.s).toDateString() === at.toDateString() ? 'днес' : 'утре'} от ${hm(x.s)}`;
+      if (x.snow) add(at, 'snow', '❄️ Идва сняг — остани на топло', `Сняг ${when} (${durTxt(x.e - x.s)}). Поръчай през eBag и пазарът идва до вратата 🛒`);
+      else add(at, 'rain', '🌧️ Скоро завалява — не се мокри', `Дъжд ${when} за ${durTxt(x.e - x.s)}. Без чадър и торби — поръчай през eBag 🛒`);
+    });
+    // студ и жега — по дневната прогноза
+    const Dd = w.daily; if (Dd) Dd.time.forEach((t, i) => {
+      const d0 = new Date(t + 'T00:00'); const mn = Dd.temperature_2m_min[i], mx = Dd.temperature_2m_max[i], mo = d0.getMonth();
+      if (mn <= -1 && mx <= 4) { const at = new Date(d0); at.setHours(8, 0, 0, 0); add(at, 'cold', `🥶 Мразовит ден: до ${Math.round(mn)}°`, 'Днес е студено навън. Поръчай нужното през eBag с доставка до вратата 🛒'); }
+      if (mo >= 5 && mo <= 8 && mx >= 33) { const at = new Date(d0); at.setHours(10, 30, 0, 0); add(at, 'heat', `🥵 Жега до ${Math.round(mx)}° днес`, 'Не мъкни торби в жегата — поръчай вода и свежи продукти през eBag 🛒'); }
+    });
+    if (list.length) await ln.schedule({ notifications: list });
+  } catch (e) { /* не е критично */ }
+}
+(function () {
+  const bSet = renderSettings;
+  renderSettings = function (el) {
+    bSet(el);
+    setTimeout(() => {
+    const card = [...el.querySelectorAll('.card h2')].find(h => /Подсещания за храна/.test(h.textContent));
+    const html = `<label class="row between" style="padding:8px 0;align-items:center"><span>🌧️ Лошо време (дъжд, сняг, студ, жега)</span><input type="checkbox" id="wxN" ${S.settings.wxNotif !== false ? 'checked' : ''} style="width:24px;height:24px;accent-color:#0e7a5c"></label>`;
+    if (card) { const c = card.closest('.card'); const btn = c.querySelector('#mealTest'); btn ? btn.insertAdjacentHTML('beforebegin', html) : c.insertAdjacentHTML('beforeend', html); }
+    const cb = el.querySelector('#wxN'); if (cb) cb.onchange = () => { S.settings.wxNotif = cb.checked; save(); scheduleWxNotif(); toast(cb.checked ? 'Включено' : 'Изключено'); };
+    }, 0);
   };
 })();
