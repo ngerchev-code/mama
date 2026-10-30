@@ -33,19 +33,19 @@ const BREAKFASTS = [
 ];
 const BF_OK = { all: ['all', 'pesc', 'veg', 'vegan'], flex: ['all', 'pesc', 'veg', 'vegan'], pesc: ['pesc', 'veg', 'vegan'], veg: ['veg', 'vegan'], vegan: ['vegan'] };
 
-function bfPick(skip = 0) {
+/* Детерминиран избор по дата — същата закуска е и в известието, и в прозореца. Без повторение, докато не минат всички. */
+function dayOfYear(d) { return Math.floor((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 1)) / 864e5); }
+function permOf(arr, key) { const rnd = seeded(key); return arr.map(x => [rnd(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]); }
+function bfPick(skip = 0, date = new Date()) {
   const diet = (P().diet || 'all'), ok = BF_OK[diet] || BF_OK.all;
-  const d = new Date(), wk = d.getDay(), m = d.getMonth();
-  let pool = BREAKFASTS.map((b, i) => Object.assign({ i }, b)).filter(b => ok.includes(b.d));
-  const hist = S.guide.bfHist || [];
-  // поводът според деня и сезона
+  const wk = date.getDay(), m = date.getMonth();
+  const pool = permOf(BREAKFASTS.map((b, i) => Object.assign({ i }, b)).filter(b => ok.includes(b.d)), 'bf' + date.getFullYear() + diet);
   const want = (wk === 0 || wk === 6) ? ['Уикенд', 'Българска класика', 'За децата'] : wk === 1 ? ['За енергия', 'Работен ден'] : ['Работен ден', 'За 2 минути', 'Висок протеин', 'За из път'];
   if (m >= 10 || m <= 2) want.push('За имунитета', 'Топла и уютна'); if (m >= 5 && m <= 7) want.push('Хладна (лято)', 'Лека закуска'); if (m >= 8 && m <= 10) want.push('Есенна');
-  if (household() === 'baby' || household() === 'kids') want.push('За децата');
-  const rnd = seeded(todayISO() + ':' + skip);
-  const score = b => (want.includes(b.occ) ? 3 : 0) + (hist.includes(b.i) ? -10 : 0) + rnd() * 2.5;
-  pool.sort((a, b) => score(b) - score(a));
-  return pool[0];
+  if (typeof household === 'function' && (household() === 'baby' || household() === 'kids')) want.push('За децата');
+  const base = (dayOfYear(date) * 2 + skip * 3) % pool.length;
+  const win = [0, 1].map(k => pool[(base + k) % pool.length]);
+  return win.find(b => want.includes(b.occ)) || win[0];
 }
 function bfHTML(b) {
   return `<div class="bf-meta">⏱️ ${b.min} мин · ${esc(b.occ)}</div>
@@ -56,13 +56,13 @@ function bfHTML(b) {
 function bfShow(skip = 0) {
   const b = bfPick(skip);
   const name = (P().name || '').trim().split(' ')[0];
-  S.guide.bf = todayISO(); S.guide.bfHist = [b.i, ...(S.guide.bfHist || []).filter(x => x !== b.i)].slice(0, 10); save();
+  S.guide.bf = todayISO(); save();
   popup({ theme: 'linear-gradient(140deg,#f76b1c 0%,#fa8f2c 55%,#f9a83a 100%)', emoji: b.e, kicker: `Добро утро${name ? ', ' + esc(name) : ''}! ☀️ Закуска на деня`, title: esc(b.n), text: bfHTML(b),
     actions: [{ label: '😋 Супер, благодаря!', primary: true, fn: null }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => bfShow(skip + 1), 250) }] });
 }
 function bfWindow() { const d = new Date(), mins = d.getHours() * 60 + d.getMinutes(); return mins >= 360 && mins <= 510; }
 function bfCheck() {
-  if (!bfWindow() || S.guide.bf === todayISO() || !P().onboarded) return;
+  if (!bfWindow() || S.guide.bf === todayISO() || !P().onboarded || (S.settings.meals || {}).b === false) return;
   if (popOpen || document.querySelector('.onb, .tour, #ow, #call, .greet.in') || (typeof sheetOpen === 'function' && sheetOpen())) return;
   bfShow(0);
 }
