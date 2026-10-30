@@ -50,6 +50,7 @@ async function scheduleMeals(ask) {
     const ids = []; for (let i = 0; i < 24; i++) ids.push({ id: 1100 + i });
     await ln.cancel({ notifications: ids }).catch(() => {});
     if (st.display !== 'granted') return;
+    if (ask) await exactAsk();
     try { await ln.createChannel({ id: 'meals', name: 'Закуска, обяд и вечеря', description: 'Предложение за храна три пъти дневно', importance: 4, visibility: 1, vibration: true }); } catch (e) {}
     const on = S.settings.meals || {}, now = new Date(), list = [];
     for (let day = 0; day < 7; day++) {
@@ -74,6 +75,27 @@ function mealsAskOnce() {
   return true;
 }
 
+/* Точни часове (Android 12+): иначе телефонът може да забави известието */
+async function exactOk() { const ln = LN(); try { if (ln && ln.checkExactNotificationSetting) return (await ln.checkExactNotificationSetting()).exact_alarm === 'granted'; } catch (e) {} return true; }
+async function exactAsk() {
+  if (await exactOk()) return;
+  return new Promise(res => popup({ theme: 'linear-gradient(140deg,#0e7a5c 0%,#22c55e 100%)', emoji: '⏰', kicker: 'Една последна стъпка', title: 'Подсещанията да идват точно навреме',
+    text: 'Телефонът ще отвори настройка <b>„Аларми и напомняния“</b> — включи я за MAMA. Така закуската идва в 07:00, обядът в 12:00 и вечерята в 18:30 — без закъснение.',
+    actions: [{ label: '⏰ Включи', primary: true, fn: async () => { try { await LN().changeExactNotificationSetting(); } catch (e) {} setTimeout(() => { scheduleMeals(false); typeof scheduleWxNotif === 'function' && scheduleWxNotif(); res(); }, 1500); } }, { label: 'По-късно', fn: () => res() }] }));
+}
+async function notifStatusHTML() {
+  const ln = LN(); if (!ln) return '<div class="muted small">Известията работят в приложението за Android.</div>';
+  let perm = 'denied', exact = true, next = null, n = 0;
+  try { perm = (await ln.checkPermissions()).display; } catch (e) {}
+  exact = await exactOk();
+  try { const p = (await ln.getPending()).notifications || []; n = p.length; const nx = p.map(x => ({ t: new Date((x.schedule && x.schedule.at) || 0).getTime(), x })).filter(o => o.t > Date.now()).sort((a, b) => a.t - b.t)[0]; if (nx) next = nx; } catch (e) {}
+  const nxTxt = next ? `${new Date(next.t).toLocaleDateString('bg-BG', { weekday: 'short' })} ${hm(next.t)} — ${esc(next.x.title || '')}` : 'няма';
+  return `<div class="notif-st"><div>${perm === 'granted' ? '✅' : '❌'} Известия: <b>${perm === 'granted' ? 'разрешени' : 'не са разрешени'}</b></div>
+    <div>${exact ? '✅' : '⚠️'} Точни часове: <b>${exact ? 'да' : 'не — може да закъсняват'}</b></div>
+    <div>📅 Планирани: <b>${n}</b> · следващо: ${nxTxt}</div></div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${perm !== 'granted' || !exact ? '<button class="btn primary small" id="nFix">🔧 Оправи</button>' : ''}<button class="btn tonal small" id="nTest">🔔 Пробно известие</button></div>`;
+}
+
 /* ─── Настройки ─── */
 (function () {
   const bSet = renderSettings;
@@ -83,16 +105,27 @@ function mealsAskOnce() {
     const row = (k, e, t) => `<label class="row between" style="padding:8px 0;align-items:center"><span>${e} ${t}</span><input type="checkbox" data-meal="${k}" ${on[k] !== false ? 'checked' : ''} style="width:24px;height:24px;accent-color:#0e7a5c"></label>`;
     el.insertAdjacentHTML('beforeend', `<div class="card"><h2>🔔 Подсещания за храна</h2><div class="muted small">Известие на телефона и предложение в приложението.</div>
       ${row('b', '☀️', 'Закуска · 07:00')}${row('l', '🍲', 'Обяд · 12:00')}${row('d', '🌙', 'Вечеря · 18:30')}
-      ${LN() ? '<button class="btn tonal small" id="mealTest" style="margin-top:6px">Разреши известията</button>' : ''}</div>`);
+      <div id="nStat" style="margin-top:6px"></div><span id="mealTest" hidden></span></div>`);
+    notifStatusHTML().then(h => { const box = el.querySelector('#nStat'); if (!box) return; box.innerHTML = h;
+      const f = box.querySelector('#nFix'); if (f) f.onclick = async () => { await scheduleMeals(true); typeof scheduleWxNotif === 'function' && scheduleWxNotif(); setTimeout(() => renderSettings(el), 2500); };
+      const t = box.querySelector('#nTest'); if (t) t.onclick = async () => { const ln = LN(); try { let st = await ln.checkPermissions(); if (st.display !== 'granted') st = await ln.requestPermissions(); if (st.display !== 'granted') return toast('Разреши известията за MAMA'); await ln.createChannel({ id: 'meals', name: 'Закуска, обяд и вечеря', importance: 4, visibility: 1, vibration: true }).catch(() => {}); await ln.schedule({ notifications: [{ id: 1299, channelId: 'meals', title: '🔔 Пробно известие от MAMA', body: 'Работи! Така ще идват закуската, обядът и вечерята.', schedule: { at: new Date(Date.now() + 8000), allowWhileIdle: true }, smallIcon: 'ic_stat_mama', iconColor: '#0E7A5C' }] }); toast('След 8 секунди идва пробното известие — излез от MAMA'); } catch (e) { toast('Грешка: ' + (e.message || e)); } };
+    });
     el.querySelectorAll('[data-meal]').forEach(c => c.onchange = () => { S.settings.meals = Object.assign({}, S.settings.meals, { [c.dataset.meal]: c.checked }); save(); scheduleMeals(false); toast(c.checked ? 'Включено' : 'Изключено'); });
-    const t = el.querySelector('#mealTest'); if (t) t.onclick = async () => { await scheduleMeals(true); const st = await LN().checkPermissions(); toast(st.display === 'granted' ? 'Известията са разрешени ✓' : 'Разреши ги от настройките на телефона'); };
+    
   };
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => scheduleMeals(false), 4000);
-  setTimeout(() => { if (!mealsAskOnce()) mealCheck(); }, 9000);
+  setTimeout(async () => {
+    if (mealsAskOnce()) return;
+    // за вече разрешилите: веднъж молим за точни часове
+    const ln = LN();
+    if (ln && !S.settings.exactAsked && !popOpen) { try { const st = await ln.checkPermissions(); if (st.display === 'granted' && !(await exactOk())) { S.settings.exactAsked = 1; save(); return exactAsk(); } } catch (e) {} }
+    mealCheck();
+  }, 9000);
   setInterval(mealCheck, 20000);
+  const exInt = setInterval(async () => { const ln = LN(); if (!ln || S.settings.exactAsked) return clearInterval(exInt); if (popOpen || !S.settings.mealsAsked) return; try { const st = await ln.checkPermissions(); if (st.display !== 'granted') return; if (await exactOk()) { S.settings.exactAsked = 1; save(); return clearInterval(exInt); } S.settings.exactAsked = 1; save(); clearInterval(exInt); exactAsk(); } catch (e) {} }, 15000);
   const ln = LN();
   if (ln) ln.addListener('localNotificationActionPerformed', a => { const x = (a && a.notification && a.notification.extra) || {}; if (x.meal) setTimeout(() => { closePopup && closePopup(true); go('home'); mealShow(x.meal); }, 900); });
 });

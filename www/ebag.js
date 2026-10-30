@@ -281,7 +281,7 @@ async function scheduleWxNotif() {
     setTimeout(() => {
     const card = [...el.querySelectorAll('.card h2')].find(h => /Подсещания за храна/.test(h.textContent));
     const html = `<label class="row between" style="padding:8px 0;align-items:center"><span>🌧️ Лошо време (дъжд, сняг, студ, жега)</span><input type="checkbox" id="wxN" ${S.settings.wxNotif !== false ? 'checked' : ''} style="width:24px;height:24px;accent-color:#0e7a5c"></label>`;
-    if (card) { const c = card.closest('.card'); const btn = c.querySelector('#mealTest'); btn ? btn.insertAdjacentHTML('beforebegin', html) : c.insertAdjacentHTML('beforeend', html); }
+    if (card) { const c = card.closest('.card'); const btn = c.querySelector('#nStat'); btn ? btn.insertAdjacentHTML('beforebegin', html) : c.insertAdjacentHTML('beforeend', html); }
     const cb = el.querySelector('#wxN'); if (cb) cb.onchange = () => { S.settings.wxNotif = cb.checked; save(); scheduleWxNotif(); toast(cb.checked ? 'Включено' : 'Изключено'); };
     }, 0);
   };
