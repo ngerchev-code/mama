@@ -631,3 +631,21 @@ nav.bottom .badge.chatb { background: #be123c; }
 .tag:not(.best):not(.warn):not(.bad):not(.promo) { background: var(--surface-2); color: var(--text); }
 .ow-kicker { color: #6d28d9; } .ow-sub, .ow-skip { color: #4c4462; }
 @media (prefers-color-scheme: dark) { .book-heart { background: rgba(20,20,20,.75); } }
+
+/* ─── брояч до Нова година ─── */
+.ny-bar { position: sticky; z-index: 19; display: flex; align-items: center; gap: 8px; width: 100%; border: 0; cursor: pointer; font: inherit;
+  padding: 7px 16px; color: #fff; background: linear-gradient(90deg,#1e1b4b,#3b2a8f 50%,#7a1f4d); box-shadow: 0 2px 8px rgba(0,0,0,.18); text-align: left; }
+.ny-bar .ny-e { font-size: 18px; }
+.ny-bar .ny-l { font-size: 13px; opacity: .92; white-space: nowrap; }
+.ny-bar .ny-t { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 15px; letter-spacing: .3px; }
+.ny-bar .ny-t b { color: #ffe08a; font-weight: 800; } .ny-bar .ny-t i { font-style: normal; font-size: 12px; margin: 0 6px 0 3px; opacity: .9; }
+.ny-bar .ny-go { font-size: 20px; line-height: 1; opacity: .85; }
+.ny-hero { border-radius: 18px; padding: 16px; color: #fff; background: linear-gradient(140deg,#1e1b4b,#3b2a8f 55%,#7a1f4d); }
+.ny-big { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.ny-big div { background: rgba(0,0,0,.28); border-radius: 12px; padding: 10px 4px; text-align: center; }
+.ny-big b { display: block; font-size: 26px; color: #ffe08a; font-variant-numeric: tabular-nums; } .ny-big span { font-size: 12px; opacity: .9; }
+.fit-bridge { display: flex; align-items: center; gap: 12px; cursor: pointer; color: #fff; background: linear-gradient(120deg,#1e1b4b,#6d28d9 60%,#a21caf); border: 0; margin-top: 12px; }
+.fit-bridge .small { opacity: .93; } .fit-bridge .fit-ic { font-size: 30px; }
+.fit-bridge .fit-go { background: #fff; color: #4c1d95; font-weight: 800; border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
+/* лентата и броячът остават горе при скрол */
+body { height: auto; min-height: 100%; }
