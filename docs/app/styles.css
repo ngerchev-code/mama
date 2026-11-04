@@ -561,3 +561,14 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .sheet .th-tip { background: #f6f0ff; margin-top: 10px; }
 .card.des-hero { background: linear-gradient(135deg, #f472b6, #fb7185 55%, #fbbf24); color: #fff; border: 0; }
 .card.sal-hero { background: linear-gradient(135deg, #16a34a, #65a30d 55%, #facc15); color: #fff; border: 0; }
+
+/* ═══ Здравен филтър ═══ */
+.card.h-home { background: linear-gradient(135deg, #e11d48, #f43f5e 55%, #fb923c); color: #fff; border: 0; }
+.h-ctr { margin-top: 8px; background: rgba(255,255,255,.2); border-radius: 12px; padding: 7px 10px; font-size: 13.5px; }
+.h-note { border-radius: 14px; padding: 10px 12px; margin: 10px 0; font-size: 14px; line-height: 1.45; }
+.h-note ul { margin: 6px 0 0; padding-left: 18px; }
+.h-note.good { background: #ffe4e6; color: #881337; }
+.h-note.warn { background: #fef3c7; color: #78350f; }
+.h-note.bad { background: #fee2e2; color: #7f1d1d; }
+.card.h-card { background: #fff1f2; border: 1px solid #fecdd3; }
+.h-row { padding: 6px 0; border-top: 1px dashed #fecdd3; align-items: center; gap: 8px; font-size: 14px; }

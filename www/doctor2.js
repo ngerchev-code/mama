@@ -32,6 +32,12 @@ const LAB_RX = [ // ред има значение: по-специфичнит�
   ['hb', /(хемоглобин|\bhgb\b|\bhb\b)/],
   ['k', /(калий|potassium|\bk\+?\s)/],
   ['na', /(натрий|sodium|\bna\+?\s)/],
+  ['bili', /(билирубин\w*(\s*общ)?|bilirubin|\bt-?bil\b)/],
+  ['urea', /(урея|\burea\b|карбамид)/],
+  ['lymph', /(\blymph\b(?!\s*%)|\blym\b(?!\s*%)|лимфоцити(?!\s*%))/],
+  ['wbc', /(левкоцити|\bwbc\b)/],
+  ['plt', /(тромбоцити|\bplt\b)/],
+  ['psa', /(\bpsa\b|простатно[\s-]*специфичен)/],
 ];
 // \b в JS не работи с кирилица — заменяме го с граница, която разпознава и кирилски букви
 const WB = '(?:(?<![a-zа-яё0-9])(?=[a-zа-яё0-9])|(?<=[a-zа-яё0-9])(?![a-zа-яё0-9]))';
@@ -49,7 +55,9 @@ function parseLabText(text) {
       if (k === 'hb' && /a1c|гликир/.test(line)) continue;
       const m = rx.exec(line); if (!m) continue;
       const rest = line.slice(m.index + m[0].length);
-      const nm = /(\d{1,4}(?:[.,]\d{1,3})?)/.exec(rest); if (!nm) continue;
+      const rest2 = rest.replace(/\d+\s*ч(?![а-я])/g, ' ').replace(/\(\s*[a-z%]+\s*\)/g, ' ');
+      if (/^\s*[-–]?\s*(neg|norm|отр|n\/a)/.test(rest2)) continue;
+      const nm = /(\d{1,4}(?:[.,]\d{1,3})?)/.exec(rest2); if (!nm) continue;
       let v = parseFloat(nm[1].replace(',', '.'));
       const ind = IND.find(i => i.k === k); if (!ind || isNaN(v)) continue;
       let conv = false;
@@ -75,10 +83,12 @@ function labPhoto() {
   openSheet(`<h3>📷 Качи изследване</h3>
     <div class="muted small">Снимай листа с резултатите на светло, отгоре и без сенки — или избери снимка/скрийншот от галерията. Разчитането става на телефона, снимката не се изпраща никъде.</div>
     <label class="btn primary block" style="margin-top:12px">📸 Снимай / избери снимка<input type="file" accept="image/*" id="labFile" hidden></label>
+    <label class="btn primary block" style="margin-top:8px">📄 Качи PDF от лабораторията<input type="file" accept="application/pdf,.pdf" id="labPdfF" hidden></label>
     <button class="btn tonal block" id="labText" style="margin-top:8px">📋 Постави текст (от имейл/PDF)</button>
     <button class="btn tonal block" id="labHand" style="margin-top:8px">✍️ Въведи ръчно</button>
     <div class="notice info" style="margin-top:12px">ℹ️ <div>Първото разчитане изтегля речник за български (~10 MB) — нужен е интернет. След това е по-бързо.</div></div>`, el => {
     el.querySelector('#labFile').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) runOcr(f); };
+    el.querySelector('#labPdfF').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) runPdf(f); };
     el.querySelector('#labHand').onclick = () => { closeSheet(); setTimeout(drLabsForm, 250); };
     el.querySelector('#labText').onclick = () => openSheet(`<h3>📋 Постави текста на изследването</h3><textarea class="input" id="labTxt" rows="10" placeholder="Холестерол 6,1 mmol/L&#10;LDL 4,2&#10;Глюкоза 5,9 …"></textarea><button class="btn primary block" id="labParse" style="margin-top:10px">Разчети</button>`,
       s => s.querySelector('#labParse').onclick = () => reviewLabs(parseLabText(s.querySelector('#labTxt').value), s.querySelector('#labTxt').value));
@@ -101,6 +111,34 @@ async function runOcr(file) {
     reviewLabs(parsed, data.text || '');
   } catch (e) {
     openSheet(`<h3>Неуспешно разчитане</h3><div class="muted">${esc(e.message || 'Грешка')}. Провери интернет връзката за първото изтегляне или въведи стойностите ръчно.</div><button class="btn primary block" id="hand" style="margin-top:10px">✍️ Въведи ръчно</button>`, s => s.querySelector('#hand').onclick = () => { closeSheet(); setTimeout(drLabsForm, 250); });
+  }
+}
+/* PDF от лабораторията — текстът се чете в телефона, нищо не се изпраща навън */
+async function pdfText(file) {
+  await loadScript('vendor/pdf.min.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('vendor/pdf.worker.min.js', location.href).href;
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const out = [];
+  for (let n = 1; n <= Math.min(pdf.numPages, 10); n++) {
+    const tc = await (await pdf.getPage(n)).getTextContent();
+    const rows = [];
+    tc.items.forEach(it => { if (!it.str || !it.str.trim()) return; const y = it.transform[5], x = it.transform[4]; let r = rows.find(r => Math.abs(r.y - y) < 3); if (!r) rows.push(r = { y, items: [] }); r.items.push({ x, s: it.str }); });
+    rows.sort((a, b) => b.y - a.y).forEach(r => out.push(r.items.sort((a, b) => a.x - b.x).map(i => i.s).join('  ')));
+  }
+  return out.join('\n');
+}
+async function runPdf(file) {
+  openSheet(`<h3>📄 Чета PDF-а…</h3><div class="muted small">Обработката е само в телефона ти.</div>`);
+  try {
+    let text = await pdfText(file);
+    text = text.replace(/(ЕГН|ЛНЧ)[:\s]*\d{6,}/gi, '$1: ••••••••••');
+    if (text.replace(/\s/g, '').length < 40) throw new Error('В PDF-а няма текст (вероятно е сканиран) — снимай листа и ползвай „Снимай / избери снимка“');
+    const parsed = parseLabText(text);
+    const dm = /(?:дата\s*на\s*изследван\w*|дата)[:\s]*(\d{2})\.(\d{2})\.(\d{4})/i.exec(text) || /(\d{2})\.(\d{2})\.(\d{4})/.exec(text);
+    if (dm) parsed.date = `${dm[3]}-${dm[2]}-${dm[1]}`;
+    reviewLabs(parsed, text);
+  } catch (e) {
+    openSheet(`<h3>Неуспешно четене</h3><div class="muted">${esc(e.message || 'Грешка')}</div><button class="btn primary block" style="margin-top:12px" onclick="closeSheet();setTimeout(drLabsForm,250)">✍️ Въведи ръчно</button>`);
   }
 }
 function shrinkImage(file, max) {
