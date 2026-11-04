@@ -82,7 +82,7 @@ function labPhoto() {
   if (!DS().profile) { toast('Първо попълни кратък профил'); drWizard(0); return; }
   openSheet(`<h3>📷 Качи изследване</h3>
     <div class="muted small">Снимай листа с резултатите на светло, отгоре и без сенки — или избери снимка/скрийншот от галерията. Разчитането става на телефона, снимката не се изпраща никъде.</div>
-    <label class="btn primary block" style="margin-top:12px">📸 Снимай / избери снимка<input type="file" accept="image/*" id="labFile" hidden></label>
+    <label class="btn primary block" style="margin-top:12px">📸 Снимай / избери снимка<input type="file" accept="image/*,application/pdf,.pdf" id="labFile" hidden></label>
     <label class="btn primary block" style="margin-top:8px">📄 Качи PDF от лабораторията<input type="file" accept="application/pdf,.pdf" id="labPdfF" hidden></label>
     <button class="btn tonal block" id="labText" style="margin-top:8px">📋 Постави текст (от имейл/PDF)</button>
     <button class="btn tonal block" id="labHand" style="margin-top:8px">✍️ Въведи ръчно</button>
@@ -95,6 +95,7 @@ function labPhoto() {
   });
 }
 async function runOcr(file) {
+  if (isPdf(file)) return runPdf(file);
   openSheet(`<h3>🔎 Разчитам изследването…</h3><div class="muted small" id="ocrSt">Подготовка</div><div class="track" style="height:10px;background:var(--surface-2);border-radius:6px;margin-top:10px;overflow:hidden"><div id="ocrBar" style="height:100%;width:3%;background:var(--primary);transition:width .3s"></div></div>`);
   const st = t => { const e = $('#ocrSt'); if (e) e.textContent = t; };
   const bar = p => { const e = $('#ocrBar'); if (e) e.style.width = Math.max(3, Math.round(p * 100)) + '%'; };
@@ -113,11 +114,15 @@ async function runOcr(file) {
     openSheet(`<h3>Неуспешно разчитане</h3><div class="muted">${esc(e.message || 'Грешка')}. Провери интернет връзката за първото изтегляне или въведи стойностите ръчно.</div><button class="btn primary block" id="hand" style="margin-top:10px">✍️ Въведи ръчно</button>`, s => s.querySelector('#hand').onclick = () => { closeSheet(); setTimeout(drLabsForm, 250); });
   }
 }
+const isPdf = f => f && (/pdf/i.test(f.type || '') || /\.pdf$/i.test(f.name || ''));
 /* PDF от лабораторията — текстът се чете в телефона, нищо не се изпраща навън */
 async function pdfText(file) {
   await loadScript('vendor/pdf.min.js');
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('vendor/pdf.worker.min.js', location.href).href;
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const buf = new Uint8Array(await file.arrayBuffer());
+  let pdf;
+  try { pdf = await pdfjsLib.getDocument({ data: buf.slice(), isEvalSupported: false }).promise; }
+  catch (e) { pdfjsLib.GlobalWorkerOptions.workerSrc = ''; pdf = await pdfjsLib.getDocument({ data: buf.slice(), isEvalSupported: false, disableWorker: true }).promise; }
   const out = [];
   for (let n = 1; n <= Math.min(pdf.numPages, 10); n++) {
     const tc = await (await pdf.getPage(n)).getTextContent();
@@ -157,7 +162,7 @@ function reviewLabs(parsed, raw) {
   const ks = Object.keys(parsed.found);
   const p = DS().profile;
   openSheet(`<h3>✅ Провери разчетените стойности</h3>
-    <div class="muted small">${ks.length ? `Намерени ${ks.length} показателя. Поправи, ако има грешка, и махни отметката на грешно разчетените.` : 'Не открих познати показатели. Опитай по-ясна снимка или въведи ръчно.'}</div>
+    <div class="muted small">${ks.length ? `Намерени ${ks.length} показателя. Поправи, ако има грешка, и махни отметката на грешно разчетените.` : 'Не открих познати показатели. Ако имаш PDF от лабораторията — качи го с „📄 Качи PDF“ (по-точно е от снимка). Иначе опитай по-ясна снимка или въведи ръчно.'}</div>
     <label class="lbl">Дата на изследването</label><input class="input" type="date" id="rvD" value="${parsed.date}">
     <ul class="list">${ks.map(k => { const ind = IND.find(i => i.k === k); const f = parsed.found[k]; const e = evalInd(ind, f.v, p);
       return `<li class="li" style="cursor:default"><input type="checkbox" data-ok="${k}" checked style="width:22px;height:22px"><div class="grow"><div class="title">${esc(ind.n)}</div><div class="muted small">${e ? `<span class="tag ${ST_COLOR[e.st]}">${esc(e.label)}</span>` : ''}${f.conv ? ' · превърнато от ' + esc(ind.alt[0]) : ''}</div></div>

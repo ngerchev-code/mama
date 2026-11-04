@@ -39,6 +39,7 @@ jobs:
           echo "{\"code\": ${{ github.run_number }}}" > www/build.json
           cat www/build.json
           npm ci
+          for f in www/*.js; do node --check "$f" || exit 1; done
           sh tools/minify.sh www
           echo "{\"code\": ${{ github.run_number }}, \"minNative\": $(cat android/NATIVE_VERSION)}" > update.json
           (cd www && zip -qr ../web.zip .)

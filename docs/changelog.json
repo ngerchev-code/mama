@@ -1,7 +1,16 @@
 {
-  "latest": 33,
+  "latest": 34,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 34,
+      "date": "2026-11-04",
+      "title": "PDF изследвания — поправка",
+      "items": [
+        "📄 PDF от лабораторията се разпознава и през бутона „Снимай / избери снимка“",
+        "🛡️ По-надеждно четене на PDF на всички телефони"
+      ]
+    },
     {
       "code": 33,
       "date": "2026-11-04",
