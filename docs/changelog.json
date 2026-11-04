@@ -1,9 +1,9 @@
 {
-  "latest": 32,
+  "latest": 33,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
     {
-      "code": 32,
+      "code": 33,
       "date": "2026-11-04",
       "title": "Здравен филтър",
       "items": [
