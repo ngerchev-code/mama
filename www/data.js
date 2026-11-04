@@ -167,7 +167,7 @@ const CHAIN_INFO = {
   cba: { name: 'CBA', color: '#d0021b', site: 'https://www.cba.bg' },
   metro: { name: 'Metro', color: '#002d72', ink: '#ffe500', site: 'https://www.metro.bg' },
   promarket: { name: 'ProMarket', color: '#f39200', site: 'https://promarket.bg' },
-  ebag: { name: 'eBag', color: '#7ab800', site: 'https://www.ebag.bg' },
+  ebag: { name: 'eBag', color: '#4d7c0f', site: 'https://www.ebag.bg' },
 };
 const MAIN_CHAINS = ['kaufland', 'lidl', 'billa', 'fantastico', 'tmarket'];
 
@@ -176,7 +176,7 @@ const ONLINE_SHOPS = [
   { id: 'ebay', name: 'eBay', color: '#e53238', url: q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}` },
   { id: 'ebayde', name: 'eBay.de', color: '#0064d2', url: q => `https://www.ebay.de/sch/i.html?_nkw=${encodeURIComponent(q)}` },
   { id: 'emag', name: 'eMAG', color: '#005eb8', url: q => `https://www.emag.bg/search/${encodeURIComponent(q)}` },
-  { id: 'ebag', name: 'eBag', color: '#7ab800', url: q => `https://www.ebag.bg/search/?products%5Bquery%5D=${encodeURIComponent(q)}` },
+  { id: 'ebag', name: 'eBag', color: '#4d7c0f', url: q => `https://www.ebag.bg/search/?products%5Bquery%5D=${encodeURIComponent(q)}` },
   { id: 'kauflandmp', name: 'Kaufland.bg онлайн', color: '#e10915', url: q => `https://www.kaufland.bg/search.html?q=${encodeURIComponent(q)}` },
   { id: 'aliexpress', name: 'AliExpress', color: '#ff4747', url: q => `https://www.aliexpress.com/w/wholesale-${encodeURIComponent(q.replace(/\s+/g, '-'))}.html` },
   { id: 'amazon', name: 'Amazon.de', color: '#ff9900', url: q => `https://www.amazon.de/s?k=${encodeURIComponent(q)}` },

@@ -572,3 +572,62 @@ nav.bottom .badge.chatb { left: auto; right: calc(50% - 22px); background: #ff5e
 .h-note.bad { background: #fee2e2; color: #7f1d1d; }
 .card.h-card { background: #fff1f2; border: 1px solid #fecdd3; }
 .h-row { padding: 6px 0; border-top: 1px dashed #fecdd3; align-items: center; gap: 8px; font-size: 14px; }
+
+/* ═══ Контраст: бял текст само върху наситени цветове (WCAG ≥ 4.5) ═══ */
+:root { --hero: linear-gradient(135deg, #0a5c45 0%, #0e7a5c 55%, #2f6b1f 100%); }
+@media (prefers-color-scheme: dark) { :root { --hero: linear-gradient(135deg, #0a5c45 0%, #0b6b50 55%, #2f5a1c 100%); } }
+.appbar { background: linear-gradient(120deg, #0a5c45 0%, #0e7a5c 60%, #2f6b1f 100%); color: #fff; }
+.appbar .iconbtn, .appbar h1, .appbar .sub { color: #fff; }
+.chip.on, .btn.primary { background: linear-gradient(120deg, #0b6b50, #0e7a5c); color: #fff; border-color: transparent; }
+nav.bottom .badge { background: #c2410c; color: #fff; }
+nav.bottom .badge.chatb { background: #be123c; }
+.pop-btn { background: rgba(0,0,0,.24); color: #fff; border: 1.5px solid rgba(255,255,255,.6); }
+.pop-btn.primary { background: #fff; color: #14201b; border-color: #fff; }
+.pop-x { background: rgba(0,0,0,.28) !important; color: #fff !important; }
+.pop-text, .pop-kicker, .pop-title { text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.card.th-card, .th-hero { background: linear-gradient(135deg, #6d28d9, #be185d 60%, #c2410c); color: #fff; }
+.card.des-hero { background: linear-gradient(135deg, #be185d, #be123c 55%, #b45309); color: #fff; }
+.card.sal-hero { background: linear-gradient(135deg, #15803d, #166534 55%, #3f6212); color: #fff; }
+.card.h-home { background: linear-gradient(135deg, #be123c, #c2410c); color: #fff; }
+.card.ebag { background: linear-gradient(135deg, #3f6212, #166534); }
+.card.chat-hero, .duo.chat { background: linear-gradient(135deg, #c2410c, #be123c); color: #fff; }
+.th-e, .tip-emo { background: rgba(255,255,255,.18); }
+.card.hero .tag, .tip-banner .tag { background: rgba(255,255,255,.92); color: #14201b; }
+/* светли карти в тъмен режим — винаги тъмен текст */
+.book-card, .book-card h2, .book-card .t, .card.h-card, .card.h-card *, .card.ebag-mini, .card.ebag-mini *, .wx-rain, .th-tip, .notif-st { color: #1f1a17; }
+.book-card .tile .t { color: var(--text); }
+.card.h-card .btn.tonal { background: #fff; color: #881337; }
+@media (prefers-color-scheme: dark) {
+  .card.book-card { background: linear-gradient(135deg, #3b2a1f, #3a2030); }
+  .book-card, .book-card h2, .book-empty { color: #f4ece6; }
+  .card.h-card { background: #3a1720; border-color: #6b1d2f; }
+  .card.h-card, .card.h-card * { color: #fde2e7; }
+  .card.h-card .btn.tonal { background: #fde2e7; color: #6b1d2f; }
+  .card.ebag-mini { background: #1f2d18; }
+  .card.ebag-mini, .card.ebag-mini * { color: #e6f4d9; }
+  .wx-rain.dry { background: #3a2f10; color: #fde68a; }
+  .wx-rain.wet { background: #172554; color: #dbeafe; }
+  .notif-st { color: var(--text); }
+  .th-today { background: #3b1f4a; }
+  .sheet .th-tip { background: #2e1f45; color: #ede4ff; }
+}
+.ebag-btn { background: #fff; color: #14201b; border: 0; font-weight: 800; }
+.ebag-ghost { background: rgba(0,0,0,.2); color: #fff; border: 1.5px solid rgba(255,255,255,.7); font-weight: 700; }
+.card.ebag .chip { background: rgba(0,0,0,.2); border-color: rgba(255,255,255,.55); color: #fff; }
+.h-ctr { background: rgba(0,0,0,.22); }
+.hero, .card.hero { color: #fff; }
+.hero .muted, .card.hero .muted, .hero .small, .card.hero .small { color: #fff; opacity: .92; }
+.card.hero .kpi { background: rgba(0,0,0,.18); color: #fff; }
+.card.hero .kpi span { opacity: .95; }
+.recipe-hero, .recipe-hero h3, .recipe-hero .small { color: #fff; }
+.tag.best { color: #0b5e3a; } .tag.warn { color: #7a4500; } .tag.bad { color: #9b1c13; } .tag.promo { color: #9a3412; }
+.lt.best { color: #0b5e3a; }
+@media (prefers-color-scheme: dark) {
+  :root { --good: #5fd39a; --warn: #ffbf47; --bad: #ff8f84; }
+  .tag.best { color: #7fe0b0; } .tag.warn { color: #ffc766; } .tag.bad { color: #ff9b8f; } .tag.promo { color: #ffb38a; }
+  .lt.best { color: #7fe0b0; }
+}
+.pop-mini, .pop-mini .small { color: #fff; }
+.tag:not(.best):not(.warn):not(.bad):not(.promo) { background: var(--surface-2); color: var(--text); }
+.ow-kicker { color: #6d28d9; } .ow-sub, .ow-skip { color: #4c4462; }
+@media (prefers-color-scheme: dark) { .book-heart { background: rgba(20,20,20,.75); } }

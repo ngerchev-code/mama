@@ -22,18 +22,18 @@ HOLIDAY_RECIPES.forEach(r => { r.season = 'all'; r.holiday = true; RECIPES.push(
 
 /* ─── Празници ─────────────────────────────────────────────────────────── */
 const TH = {
-  xmas: { g: 'linear-gradient(135deg,#b31217,#e52d27 60%,#1e7b3a)', p: ['🎄', '⭐', '❄️', '🎁'] },
-  newyear: { g: 'linear-gradient(135deg,#1d2b64,#5b86e5)', p: ['🎆', '🥂', '✨', '🎉'] },
-  easter: { g: 'linear-gradient(135deg,#ff9a3d,#ffcc33 55%,#7bc96f)', p: ['🥚', '🌷', '🐣', '🍞'] },
-  fish: { g: 'linear-gradient(135deg,#1c6ea4,#36b5d8)', p: ['🐟', '⚓', '🌊'] },
-  wine: { g: 'linear-gradient(135deg,#5b247a,#a4508b)', p: ['🍇', '🍷', '🍾'] },
-  spring: { g: 'linear-gradient(135deg,#ff416c,#ff4b2b)', p: ['🌸', '🧶', '🌷'] },
-  lamb: { g: 'linear-gradient(135deg,#3b8d2a,#a8e063)', p: ['🐑', '🌿', '🌼'] },
-  bg: { g: 'linear-gradient(180deg,#ffffff 0%,#ffffff 33%,#00966e 33%,#00966e 66%,#d62612 66%)', p: ['🇧🇬', '🌹'], ink: '#10201a' },
-  church: { g: 'linear-gradient(135deg,#8e5a2d,#d4a24c)', p: ['✝️', '🕯️', '🍞'] },
-  herbs: { g: 'linear-gradient(135deg,#11998e,#38ef7d)', p: ['🌿', '🌼', '☀️'] },
-  harvest: { g: 'linear-gradient(135deg,#c0392b,#f39c12)', p: ['🍂', '🍷', '🌾'] },
-  food: { g: 'linear-gradient(135deg,#ff9a3d,#ff5e62)', p: ['🍽️', '🍕', '🍫', '☕'] },
+  xmas: { g: 'linear-gradient(135deg,#9f1239,#b91c1c 60%,#166534)', p: ['🎄', '⭐', '❄️', '🎁'] },
+  newyear: { g: 'linear-gradient(135deg,#1d2b64,#3b5bdb)', p: ['🎆', '🥂', '✨', '🎉'] },
+  easter: { g: 'linear-gradient(135deg,#c2410c,#a16207 55%,#3f6212)', p: ['🥚', '🌷', '🐣', '🍞'] },
+  fish: { g: 'linear-gradient(135deg,#0c4a6e,#0369a1)', p: ['🐟', '⚓', '🌊'] },
+  wine: { g: 'linear-gradient(135deg,#5b247a,#86198f)', p: ['🍇', '🍷', '🍾'] },
+  spring: { g: 'linear-gradient(135deg,#be123c,#c2410c)', p: ['🌸', '🧶', '🌷'] },
+  lamb: { g: 'linear-gradient(135deg,#166534,#3f6212)', p: ['🐑', '🌿', '🌼'] },
+  bg: { g: 'linear-gradient(135deg,#166534 0%,#14532d 55%,#991b1b 100%)', p: ['🇧🇬', '🌹'] },
+  church: { g: 'linear-gradient(135deg,#7c4a1e,#92400e)', p: ['✝️', '🕯️', '🍞'] },
+  herbs: { g: 'linear-gradient(135deg,#0f766e,#15803d)', p: ['🌿', '🌼', '☀️'] },
+  harvest: { g: 'linear-gradient(135deg,#9a3412,#b45309)', p: ['🍂', '🍷', '🌾'] },
+  food: { g: 'linear-gradient(135deg,#c2410c,#be123c)', p: ['🍽️', '🍕', '🍫', '☕'] },
 };
 // d: 'MM-DD' фиксирана дата или e: дни спрямо Великден
 const HOLIDAYS = [
@@ -304,7 +304,7 @@ function renderCalendar(el) {
   const fastsThisMonth = FASTS.map(f => ({ n: f.n, a: f.from(y), b: f.to(y) })).filter(f => f.a.getMonth() <= m && f.b.getMonth() >= m && f.a.getFullYear() === y);
   const up = upcomingHolidays(3, 40);
   el.innerHTML = `
-    ${up.length ? `<div class="card hero"><div class="small" style="opacity:.85">Предстои</div>${up.map(h => { const dd = Math.round((h.date - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000); return `<div class="row between hol-up" data-hol="${h.id}" data-y="${h.date.getFullYear()}" style="padding:6px 0;cursor:pointer"><div><b>${h.emo} ${esc(h.n)}</b><div class="small" style="opacity:.85">${h.date.getDate()} ${MONTHS[h.date.getMonth()]}</div></div><span class="tag" style="background:rgba(255,255,255,.22);color:inherit">${dd === 0 ? 'днес' : dd === 1 ? 'утре' : 'след ' + dd + ' дни'}</span></div>`; }).join('')}</div>` : ''}
+    ${up.length ? `<div class="card hero"><div class="small" style="opacity:.85">Предстои</div>${up.map(h => { const dd = Math.round((h.date - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000); return `<div class="row between hol-up" data-hol="${h.id}" data-y="${h.date.getFullYear()}" style="padding:6px 0;cursor:pointer"><div><b>${h.emo} ${esc(h.n)}</b><div class="small" style="opacity:.85">${h.date.getDate()} ${MONTHS[h.date.getMonth()]}</div></div><span class="tag" style="background:rgba(0,0,0,.25);color:#fff">${dd === 0 ? 'днес' : dd === 1 ? 'утре' : 'след ' + dd + ' дни'}</span></div>`; }).join('')}</div>` : ''}
     <div class="card">
       <div class="row between" style="margin-bottom:10px"><button class="btn tonal small" id="cPrev">‹</button><b style="font-size:17px">${MONTHS[m][0].toUpperCase() + MONTHS[m].slice(1)} ${y}</b><button class="btn tonal small" id="cNext">›</button></div>
       <div class="cal">${['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд'].map(x => `<div class="cal-h">${x}</div>`).join('')}${cells.join('')}</div>

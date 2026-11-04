@@ -29,7 +29,7 @@ function mealShow(kind, skip = 0) {
   S.guide[MEAL[kind].key] = todayISO(); save();
   const ing = r.ing.filter(i => !/^(сол|пипер|черен пипер|вода)$/i.test(i[0])).slice(0, 6);
   const isL = kind === 'l';
-  popup({ theme: isL ? 'linear-gradient(140deg,#0e9f6e 0%,#22c55e 60%,#84cc16 100%)' : 'linear-gradient(140deg,#4338ca 0%,#7c3aed 55%,#c026d3 100%)',
+  popup({ theme: isL ? 'linear-gradient(140deg,#047857 0%,#166534 60%,#3f6212 100%)' : 'linear-gradient(140deg,#3730a3 0%,#6d28d9 55%,#86198f 100%)',
     emoji: groupIcon(r.group), kicker: (() => { const th = isL && !skip && typeof themeFor === 'function' && themeFor(); return th ? `${th.e} ${th.n} · обяд, ден ${th.day + 1}` : `${isL ? '🍲 Обяд' : '🌙 Вечеря'}${nm()} · предложение за днес`; })(), title: esc(r.name),
     text: `<div class="bf-meta">⏱️ ${r.time} мин · ${r.serv} порции${!isL && r.group === "salad" ? " · леко за вечерта" : ""}</div><ul class="bf-ing">${ing.map(i => `<li>${esc(i[0])}${i[1] && i[1] !== 'по вкус' ? ` — ${esc(i[1])}` : ''}</li>`).join('')}</ul>`,
     actions: [{ label: '📖 Виж рецептата', primary: true, fn: () => setTimeout(() => showRecipe(r.id), 300) }, { label: '🔄 Друго предложение', fn: () => setTimeout(() => mealShow(kind, skip + 1), 250) }, { label: '🤍 Запази в моята книга', fn: () => typeof toggleSave === 'function' && !isSaved(r.id) && toggleSave(r.id) }] });
@@ -73,7 +73,7 @@ async function scheduleMeals(ask) {
 function mealsAskOnce() {
   if (!LN() || S.settings.mealsAsked || !P().onboarded || popOpen) return false;
   S.settings.mealsAsked = 1; save();
-  popup({ theme: 'linear-gradient(140deg,#f76b1c 0%,#22c55e 100%)', emoji: '🔔', kicker: 'Ново в MAMA', title: 'Да те подсещам ли за храната?',
+  popup({ theme: 'linear-gradient(140deg,#c2410c 0%,#15803d 100%)', emoji: '🔔', kicker: 'Ново в MAMA', title: 'Да те подсещам ли за храната?',
     text: 'Всеки ден по едно вкусно и здравословно предложение:<br>☀️ <b>07:00</b> закуска<br>🍲 <b>12:00</b> обяд<br>🌙 <b>18:30</b> вечеря<br><span class="small">Можеш да ги изключиш от Настройки.</span>',
     actions: [{ label: '🔔 Да, подсещай ме', primary: true, fn: () => scheduleMeals(true) }, { label: 'Не сега', fn: null }] });
   return true;
@@ -83,7 +83,7 @@ function mealsAskOnce() {
 async function exactOk() { const ln = LN(); try { if (ln && ln.checkExactNotificationSetting) return (await ln.checkExactNotificationSetting()).exact_alarm === 'granted'; } catch (e) {} return true; }
 async function exactAsk() {
   if (await exactOk()) return;
-  return new Promise(res => popup({ theme: 'linear-gradient(140deg,#0e7a5c 0%,#22c55e 100%)', emoji: '⏰', kicker: 'Една последна стъпка', title: 'Подсещанията да идват точно навреме',
+  return new Promise(res => popup({ theme: 'linear-gradient(140deg,#0b6b50 0%,#15803d 100%)', emoji: '⏰', kicker: 'Една последна стъпка', title: 'Подсещанията да идват точно навреме',
     text: 'Телефонът ще отвори настройка <b>„Аларми и напомняния“</b> — включи я за MAMA. Така закуската идва в 07:00, обядът в 12:00 и вечерята в 18:30 — без закъснение.',
     actions: [{ label: '⏰ Включи', primary: true, fn: async () => { try { await LN().changeExactNotificationSetting(); } catch (e) {} setTimeout(() => { scheduleMeals(false); typeof scheduleWxNotif === 'function' && scheduleWxNotif(); res(); }, 1500); } }, { label: 'По-късно', fn: () => res() }] }));
 }

@@ -58,7 +58,7 @@ function recipeShopHTML(r) {
   const mx = Math.max(...chains.map(c => c.total));
   const best = est.best;
   return `<div class="section-title" style="margin-left:0">🛒 Откъде да купиш · ${esc(subtitleFor())}</div>
-    ${best ? `<div class="pop-mini" style="background:linear-gradient(120deg,#0b8a5f,#4fae2e)"><div><div class="small" style="opacity:.85">Най-изгодно за тази рецепта</div><b style="font-size:18px">${esc(chainName(best.ch))}</b> · ~${eur(best.total)}</div>
+    ${best ? `<div class="pop-mini" style="background:linear-gradient(120deg,#0b6b50,#3f6212)"><div><div class="small" style="opacity:.85">Най-изгодно за тази рецепта</div><b style="font-size:18px">${esc(chainName(best.ch))}</b> · ~${eur(best.total)}</div>
       <button class="btn small" style="background:#fff;color:#0b8a5f" data-nav-chain="${esc(best.ch)}">📍 Най-близкия</button></div>` : ''}
     <ul class="list">${rows.map(({ it, best: b }) => `<li class="li" style="cursor:default">${b ? chainBadge(b[0]) : '<div class="lead">❔</div>'}<div class="grow"><div class="title">${esc(it.name)}</div><div class="muted small">${esc(catName(it.cat))}${b ? ' · най-евтино в ' + esc(chainName(b[0])) : ' · няма данни'}</div></div><div class="price">${b ? eur(b[1]) : '—'}</div></li>`).join('')}</ul>
     ${chains.length > 1 ? `<div class="bars" style="margin-top:8px">${chains.map(c => `<div class="bar"><span class="ellipsis">${esc(chainName(c.ch))}</span><div class="track"><div class="fill" style="width:${(c.total / mx * 100).toFixed(0)}%;background:${(CHAIN_INFO[c.ch] || {}).color || 'var(--primary)'}"></div></div><span class="v">${eur(c.total)}</span></div>`).join('')}</div>` : ''}
@@ -92,7 +92,7 @@ showRecipe = function (id) {
   });
 };
 function heroGrad(r) {
-  const g = { soup: '#ff8a3d,#ff5e62', main: '#0b8a5f,#4fae2e', salad: '#43c6ac,#2bb673', pastry: '#f7b733,#fc4a1a', dessert: '#c471f5,#fa71cd' }[r.group] || '#0b8a5f,#17b26a';
+  const g = { soup: '#c2410c,#be123c', main: '#0b6b50,#3f6212', salad: '#0f766e,#15803d', pastry: '#b45309,#c2410c', dessert: '#7e22ce,#be185d', breakfast: '#b45309,#c2410c' }[r.group] || '#0b6b50,#0e7a5c';
   return `linear-gradient(135deg,${g})`;
 }
 
@@ -105,14 +105,14 @@ recipeTile = function (r) {
 
 /* ─── Изскачащ прозорец ─────────────────────────────────────────────────── */
 const THEMES = {
-  orange: 'linear-gradient(135deg,#ff9a3d 0%,#ff5e62 100%)',
-  green: 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
-  purple: 'linear-gradient(135deg,#8e2de2 0%,#c471f5 60%,#fa71cd 100%)',
-  blue: 'linear-gradient(135deg,#2193b0 0%,#6dd5ed 100%)',
-  pink: 'linear-gradient(135deg,#ff6a88 0%,#ff99ac 100%)',
-  sun: 'linear-gradient(135deg,#f7b733 0%,#fc4a1a 100%)',
-  teal: 'linear-gradient(135deg,#0b8a5f 0%,#4fae2e 100%)',
-  night: 'linear-gradient(135deg,#1d2b64 0%,#5b86e5 100%)',
+  orange: 'linear-gradient(135deg,#c2410c 0%,#e11d48 100%)',
+  green: 'linear-gradient(135deg,#0f766e 0%,#15803d 100%)',
+  purple: 'linear-gradient(135deg,#6d28d9 0%,#9333ea 60%,#a21caf 100%)',
+  blue: 'linear-gradient(135deg,#0369a1 0%,#1d4ed8 100%)',
+  pink: 'linear-gradient(135deg,#be185d 0%,#e11d48 100%)',
+  sun: 'linear-gradient(135deg,#b45309 0%,#c2410c 100%)',
+  teal: 'linear-gradient(135deg,#0b6b50 0%,#3f6212 100%)',
+  night: 'linear-gradient(135deg,#1d2b64 0%,#3b5bdb 100%)',
 };
 let popOpen = false;
 function popup({ theme = 'green', emoji = '💡', kicker = '', title, text = '', actions = [], key = null }) {

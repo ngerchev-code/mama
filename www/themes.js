@@ -81,7 +81,7 @@ function themePopup() {
   const intro = g.thWeek !== th.wk; // първото отваряне за седмицата — представяне
   g.thWeek = th.wk; g.thDay = todayISO(); save();
   const ds = themeDishes(th);
-  popup({ theme: 'linear-gradient(140deg,#7c3aed 0%,#db2777 55%,#f97316 100%)', emoji: th.e,
+  popup({ theme: 'linear-gradient(140deg,#6d28d9 0%,#be185d 55%,#c2410c 100%)', emoji: th.e,
     kicker: intro ? (th.day === 0 ? 'Започва нова тематична седмица!' : 'Тази седмица в MAMA') : `Тематична седмица · ${WDAYS[th.day]}`,
     title: intro ? esc(th.n) : `Днес: ${esc(d ? d.name : th.n)}`,
     text: intro ? `${esc(th.about)}<ul class="bf-ing">${ds.slice(0, 7).map((r, i) => `<li><b>${WDAYS[i].slice(0, 3)}</b> — ${esc(r.name)}</li>`).join('')}</ul>` : `${esc(th.n)} ${th.e} · ден ${th.day + 1} от 7<div class="th-tip" style="margin-top:10px">💡 ${esc(th.tip || '')}</div>`,
