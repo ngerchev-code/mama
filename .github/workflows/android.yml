@@ -59,6 +59,38 @@ jobs:
           cp app/build/outputs/bundle/release/app-release.aab ../MAMA-1.0.${VERSION_CODE}.aab
           cp app/build/outputs/apk/release/app-release.apk ../MAMA.apk
 
+      # Нов ключ чрез „завъртане“ (APK Signature Scheme v3): Android 9+ приема новия ключ като наследник на стария,
+      # Android 7–8 продължават със стария. Никой не преинсталира. Без тайната MAMA_NEXT_PASS — само пробно завъртане.
+      - name: Подпис с новия ключ (завъртане без преинсталиране)
+        env:
+          MAMA_NEXT_PASS: ${{ secrets.MAMA_NEXT_PASS }}
+        run: |
+          set -e
+          AS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner
+          OLD=android/keystore/mama-release.jks
+          OP="${MAMA_STORE_PASSWORD:-mama-release-2026}"; OKP="${MAMA_KEY_PASSWORD:-mama-release-2026}"; OA="${MAMA_KEY_ALIAS:-mama}"
+          if [ -n "$MAMA_NEXT_PASS" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in android/keystore/mama-next.jks.enc -out "$RUNNER_TEMP/next.jks" -pass env:MAMA_NEXT_PASS
+            NEW="$RUNNER_TEMP/next.jks"; NP="$MAMA_NEXT_PASS"; NA=mama2; MODE=real
+          else
+            keytool -genkeypair -keystore "$RUNNER_TEMP/dry.jks" -storetype PKCS12 -alias dry -keyalg RSA -keysize 2048 -validity 2 -storepass drypass1 -keypass drypass1 -dname CN=dry >/dev/null 2>&1
+            NEW="$RUNNER_TEMP/dry.jks"; NP=drypass1; NA=dry; MODE=dry
+          fi
+          "$AS" rotate --out "$RUNNER_TEMP/lineage.bin" \
+            --old-signer --ks "$OLD" --ks-key-alias "$OA" --ks-pass "pass:$OP" --key-pass "pass:$OKP" \
+            --new-signer --ks "$NEW" --ks-key-alias "$NA" --ks-pass "pass:$NP" --key-pass "pass:$NP"
+          "$AS" sign --ks "$OLD" --ks-key-alias "$OA" --ks-pass "pass:$OP" --key-pass "pass:$OKP" \
+            --next-signer --ks "$NEW" --ks-key-alias "$NA" --ks-pass "pass:$NP" --key-pass "pass:$NP" \
+            --lineage "$RUNNER_TEMP/lineage.bin" --rotation-min-sdk-version 28 --out "$RUNNER_TEMP/rotated.apk" MAMA.apk
+          "$AS" verify -v --print-certs "$RUNNER_TEMP/rotated.apk" | grep -E "Verified using|Number of signers|certificate SHA-256" | head -12
+          if [ "$MODE" = real ]; then
+            cp "$RUNNER_TEMP/rotated.apk" MAMA.apk; cp "$RUNNER_TEMP/rotated.apk" "MAMA-1.0.${VERSION_CODE}.apk"
+            echo "✅ Подписано с новия ключ (Android 9+) и стария (Android 7–8)"
+          else
+            echo "ℹ️ Пробното завъртане мина. Истинското започва, щом се добави тайната MAMA_NEXT_PASS."
+          fi
+          rm -f "$RUNNER_TEMP/next.jks" "$RUNNER_TEMP/dry.jks"
+
       - uses: actions/upload-artifact@v4
         with:
           name: MAMA-1.0.${{ github.run_number }}

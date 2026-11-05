@@ -1,7 +1,15 @@
 {
-  "latest": 37,
+  "latest": 38,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 38,
+      "date": "2026-11-05",
+      "title": "По-сигурен подпис",
+      "items": [
+        "🔐 Подготвен е нов ключ за подписване на MAMA. Инсталираните телефони продължават да се обновяват без преинсталиране"
+      ]
+    },
     {
       "code": 37,
       "date": "2026-11-05",
