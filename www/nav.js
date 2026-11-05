@@ -53,6 +53,8 @@
     const sc = document.createElement('button'); sc.id = 'navScan'; sc.className = 'nav-scan'; sc.setAttribute('aria-label', 'Скенер на продукти');
     sc.innerHTML = '<span class="nav-fab"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 5v4h2V5h4V3H5a2 2 0 0 0-2 2zm2 10H3v4a2 2 0 0 0 2 2h4v-2H5zm14 4h-4v2h4a2 2 0 0 0 2-2v-4h-2zm0-16h-4v2h4v4h2V5a2 2 0 0 0-2-2zM7 7h2v10H7zm3 0h1v10h-1zm2 0h2v10h-2zm3 0h1v10h-1zm2 0h1v10h-1z"/></svg></span>Скенер';
     sc.onclick = () => scanChooser();
+    // app.js закача go(data-go) на всички бутони от долната лента при зареждане — връщаме скенера след това
+    document.addEventListener('DOMContentLoaded', () => setTimeout(() => { sc.onclick = () => scanChooser(); }, 0));
     const list = nav.querySelector('[data-go="list"]'); list ? nav.insertBefore(sc, list) : nav.appendChild(sc);
   }
 
@@ -219,5 +221,6 @@
   back = function () { if (dr) return closeDrawer(); return bBack.apply(this, arguments); };
   const bb = document.getElementById('backBtn'); if (bb) bb.onclick = () => back();
   const bSO = sheetOpen; sheetOpen = function () { return !!dr || bSO.apply(this, arguments); };
+  const bGo = go; go = function (name) { if (!name) return; return bGo.apply(this, arguments); };
   window.openDrawer = openDrawer; window.scanChooser = scanChooser; window.photoProduct = photoProduct;
 })();

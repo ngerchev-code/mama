@@ -37,6 +37,8 @@ const server = http.createServer((req, res) => {
       }
       try { showRecipe(RECIPES[0].id); if (!document.querySelector('#sheetBody')) out.bad.push('рецептата не се отвори'); closeSheet(); } catch (e) { out.bad.push('рецепта: ' + e.message); }
       try { go('home'); popup({ title: 'Тест', text: 'т', actions: [{ label: 'OK', fn: null }] }); closePopup(true); } catch (e) { out.bad.push('прозорец: ' + e.message); }
+      try { go('home'); const fab = document.getElementById('navScan'); if (fab) { fab.click(); if (!sheetOpen() || !document.getElementById('scLive')) out.bad.push('бутонът „Скенер“ не отваря скенера'); closeSheet(); } } catch (e) { out.bad.push('скенер: ' + e.message); }
+      try { document.querySelectorAll('nav.bottom button[data-go]').forEach(b => { b.click(); if (!document.querySelector('.screen.active')) out.bad.push('празен екран от долната лента: ' + b.dataset.go); }); } catch (e) { out.bad.push('долна лента: ' + e.message); }
       if (RECIPES.length < 100) out.bad.push('твърде малко рецепти: ' + RECIPES.length);
       return out;
     });

@@ -1,7 +1,15 @@
 {
-  "latest": 43,
+  "latest": 44,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 44,
+      "date": "2026-11-05",
+      "title": "Бутонът „Скенер“ поправен",
+      "items": [
+        "📷 Бутонът „Скенер“ в средата вече отваря скенера (беше празен екран)"
+      ]
+    },
     {
       "code": 43,
       "date": "2026-11-05",
