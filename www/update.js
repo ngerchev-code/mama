@@ -11,7 +11,20 @@ async function myBuild() {
   return BUILD;
 }
 let REL = null; // { code, web, minNative }
+/* Последна версия: файлът update.json от последното издание — без лимита на GitHub API (60 заявки/час на адрес,
+   който при мобилните оператори се изчерпва от чужди потребители). API-то остава само като резервен вариант. */
+async function relFromUpdateJson() {
+  const H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
+  const url = 'https://github.com/ngerchev-code/mama/releases/latest/download/update.json?t=' + Date.now();
+  let j = null;
+  if (H) { try { const r = await H.request({ url, method: 'GET', responseType: 'json', headers: { 'Cache-Control': 'no-cache' } }); j = typeof r.data === 'string' ? JSON.parse(r.data) : r.data; } catch (e) { j = null; } }
+  if (!j) { try { const r = await fetch(url, { cache: 'no-store' }); if (r.ok) j = await r.json(); } catch (e) { j = null; } }
+  if (!j || !j.code) return 0;
+  REL = { code: +j.code, web: `https://github.com/ngerchev-code/mama/releases/download/v1.0.${j.code}/web.zip`, minNative: +j.minNative || +j.code };
+  return +j.code;
+}
 async function latestRelease() {
+  const viaFile = await relFromUpdateJson(); if (viaFile) return viaFile;
   try {
     const r = await fetch('https://api.github.com/repos/ngerchev-code/mama/releases/latest', { cache: 'no-store' });
     if (!r.ok) return 0;
