@@ -16,7 +16,7 @@
     const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
     try { const r = await fetch(url, { signal: c.signal, headers: { Accept: 'application/json' } }); if (r.status === 404) return { __404: true }; if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); } finally { clearTimeout(t); }
   }
-  const BASES = [['world.openfoodfacts.org', 'Open Food Facts'], ['world.openproductsfacts.org', 'Open Products Facts'], ['world.openbeautyfacts.org', 'Open Beauty Facts']];
+  const BASES = [['world.openfoodfacts.org', 'Open Food Facts'], ['world.openproductsfacts.org', 'Open Products Facts'], ['world.openbeautyfacts.org', 'Open Beauty Facts'], ['world.openpetfoodfacts.org', 'Open Pet Food Facts']];
   async function fromBase(host, code) {
     const d = await getJSON(`https://${host}/api/v2/product/${encodeURIComponent(code)}.json?fields=${OFF_FIELDS}&lc=bg`);
     return d && d.status === 1 && d.product ? d.product : null;
@@ -24,6 +24,29 @@
   // заменяме мрежовите функции на стария скенер с по-надеждните
   offProduct = async code => fromBase('world.openfoodfacts.org', code);
   offSearch = async q => { const d = await getJSON(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=15&fields=${OFF_FIELDS}`, 15000); return (d && d.products) || []; };
+  /* българските магазини: баркод → име и цени по вериги (от данните на КЗП, обновявани 3 пъти дневно) */
+  const kzpCache = {};
+  async function kzpEan(code) {
+    const pre = code.slice(0, 4);
+    try {
+      if (!(pre in kzpCache)) { const base = (S.settings.dataUrl || DEFAULT_DATA_URL).replace(/\/?$/, '/'); const d = await getJSON(`${base}ean/${pre}.json?t=${Math.floor(Date.now() / 36e5)}`, 8000); kzpCache[pre] = d && !d.__404 ? d : {}; }
+      const e = kzpCache[pre][code] || (code.length === 12 ? kzpCache[pre]['0' + code] : null);
+      return e ? { name: e[0], cat: e[1], prices: e[2] } : null;
+    } catch (e) { return null; }
+  }
+  async function openGtin(code) {
+    try {
+      const H = HTTP(); const url = `https://opengtindb.org/?ean=${encodeURIComponent(code)}&cmd=query&queryid=400000000`;
+      let t = '';
+      if (NATIVE && H) { const r = await H.request({ url, method: 'GET', responseType: 'text', connectTimeout: 8000, readTimeout: 8000 }); t = typeof r.data === 'string' ? r.data : ''; }
+      else { const r = await fetch(url); t = await r.text(); }
+      if (!/error=0/.test(t)) return null;
+      const g = k => { const m = new RegExp('^' + k + '=(.*)$', 'm').exec(t); return m ? m[1].trim() : ''; };
+      const title = [g('name'), g('detailname')].filter(Boolean).join(' ').trim();
+      return title ? { title, brand: g('vendor'), contents: g('contents') } : null;
+    } catch (e) { return null; }
+  }
+  const kzpHTML = kz => kz ? `<div class="card" style="margin:10px 0"><h2 style="margin:0 0 6px">🏪 В магазините в България</h2><div class="muted small" style="margin-bottom:6px">${esc(kz.name)}</div><ul class="list">${kz.prices.slice(0, 6).map(([ch, pr], i) => `<li class="li" style="cursor:default"><div class="grow"><div class="title">${esc(ch)}</div></div><b style="${i === 0 ? 'color:#0e7a5c' : ''}">${eur(pr)}</b></li>`).join('')}</ul><div class="muted small" style="margin-top:4px">Данни: КЗП „Колко струва“, най-ниската цена във веригата</div></div>` : '';
   async function upcItem(code) {
     try { const d = await getJSON(`https://api.upcitemdb.com/prod/trial/lookup?upc=${encodeURIComponent(code)}`, 9000); const it = d && d.items && d.items[0]; return it ? { title: it.title, brand: it.brand, img: (it.images || [])[0] } : null; } catch (e) { return null; }
   }
@@ -52,27 +75,34 @@
     const mine = (S.myProds || {})[code];
     if (mine) { closeSheet(); return showProduct(Object.assign({}, mine, { code })); }
     let netErr = 0;
+    const kzP = kzpEan(code);
     for (let i = 0; i < BASES.length; i++) {
-      const [host, nm] = BASES[i]; st(nm + '…', 15 + i * 22);
-      try { const p = await fromBase(host, code); if (p) { p.code = p.code || code; if (!sheetOpen()) return; closeSheet(); return showProduct(p); } } catch (e) { netErr++; }
+      const [host, nm] = BASES[i]; st(nm + '…', 12 + i * 16);
+      try { const p = await fromBase(host, code); if (p) { p.code = p.code || code; if (!sheetOpen()) return; const kz = await kzP; closeSheet(); showProduct(p); if (kz) { const b = document.getElementById('sheetBody'); const anchor = b && b.querySelector('#scAdd'); anchor ? anchor.closest('.row, div').insertAdjacentHTML('beforebegin', kzpHTML(kz)) : b && b.insertAdjacentHTML('beforeend', kzpHTML(kz)); } return; } } catch (e) { netErr++; }
     }
+    const kz = await kzP;
     if (netErr === BASES.length) return openSheet(`<h3>📶 Няма връзка с базите</h3><div class="muted">Провери интернета и опитай пак. Баркод <b>${esc(code)}</b>.</div><button class="btn primary block" id="lkRe" style="margin-top:12px">Опитай пак</button>`, el => { el.querySelector('#lkRe').onclick = () => lookup(code); });
-    st('Търся името в световна база…', 82);
-    const u = await upcItem(code);
+    st('Търся името в световните бази…', 80);
+    let u = kz ? { title: kz.name, brand: '' } : null;
+    if (!u) u = await upcItem(code);
+    if (!u) { st('Open GTIN…', 86); const o = await openGtin(code); if (o) u = { title: o.title, brand: o.brand }; }
     const q = (u && (u.brand ? u.brand + ' ' : '') + (u.title || '').split(/[,(]/)[0]) || brandOf(code);
     let similar = [];
     if (q) { st('Търся подобни продукти…', 92); try { similar = (await offSearch(q.split(' ').slice(0, 4).join(' '))).filter(p => p.ingredients_text || p.ingredients_text_bg || p.nutriments); } catch (e) {} }
-    notFound(code, u, q, similar);
+    notFound(code, u, q, similar, kz);
   };
-  function notFound(code, u, q, similar) {
+  function notFound(code, u, q, similar, kz) {
     const bad = !validEAN(code);
     openSheet(`<h3>📦 ${u ? esc(u.title) : 'Продуктът още не е в базите'}</h3>
       <div class="muted small">Баркод <b>${esc(code)}</b>${u && u.brand ? ' · ' + esc(u.brand) : ''}${bad ? ' · ⚠️ изглежда прочетен грешно — сканирай пак' : ''}</div>
       ${u && u.img ? `<img src="${esc(u.img)}" alt="" style="width:100%;max-height:160px;object-fit:contain;background:#fff;border-radius:12px;margin-top:8px">` : ''}
-      <div class="notice info" style="margin-top:10px">Точно този вариант липсва в отворените бази. Добави го за 1 минута — MAMA ще го помни и следващия път ще го покаже веднага.</div>
+      ${kzpHTML(kz)}
+      <div class="notice info" style="margin-top:10px">${kz ? 'Съставът му още липсва в отворените бази.' : 'Точно този вариант липсва в отворените бази.'} Добави го за 1 минута — MAMA ще го помни и следващия път ще го покаже веднага.</div>
       <button class="btn primary block" id="nfAdd" style="margin-top:8px">📸 Добави продукта (снимка на състава)</button>
       ${similar.length ? `<div class="section-title" style="margin-left:0">Подобни продукти${q ? ' — ' + esc(q) : ''}</div><ul class="list">${similar.slice(0, 6).map((p, i) => `<li class="li" data-si="${i}">${p.image_front_small_url ? `<img src="${esc(p.image_front_small_url)}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:10px;background:#fff">` : '<div class="lead">📦</div>'}<div class="grow"><div class="title ellipsis">${esc(p.product_name_bg || p.product_name || '—')}</div><div class="muted small">${esc(p.brands || '')}${p.quantity ? ' · ' + esc(p.quantity) : ''}</div></div></li>`).join('')}</ul>` : ''}
-      <div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn tonal small" id="nfRe">📷 Сканирай пак</button><button class="btn tonal small" id="nfName">⌨️ Търси по име</button><button class="btn tonal small" id="nfOff">Добави в Open Food Facts ↗</button></div>`, el => {
+      <div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn tonal small" id="nfRe">📷 Сканирай пак</button><button class="btn tonal small" id="nfName">⌨️ Търси по име</button><button class="btn tonal small" id="nfWeb">🌐 Търси в интернет</button>${kz ? '<button class="btn tonal small" id="nfList">🛒 В списъка</button>' : ''}<button class="btn tonal small" id="nfOff">Добави в Open Food Facts ↗</button></div>`, el => {
+      el.querySelector('#nfWeb').onclick = () => openExt(`https://www.google.com/search?q=${encodeURIComponent(code + (u && u.title ? ' ' + u.title : ''))}`);
+      const nl = el.querySelector('#nfList'); if (nl) nl.onclick = () => { S.list.push({ id: uid(), name: kz.name, cat: guessCat(kz.name), qty: 1, done: false, added: Date.now() }); save(); toast('Добавено в списъка'); };
       el.querySelectorAll('[data-si]').forEach(b => b.onclick = () => showProduct(similar[+b.dataset.si]));
       el.querySelector('#nfAdd').onclick = () => addOwn(code, u);
       el.querySelector('#nfRe').onclick = () => { closeSheet(); setTimeout(startScan, 200); };

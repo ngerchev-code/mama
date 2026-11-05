@@ -1,7 +1,18 @@
 {
-  "latest": 46,
+  "latest": 47,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 47,
+      "date": "2026-11-05",
+      "title": "Скенерът търси в 7 източника",
+      "items": [
+        "🏪 Нов български източник: баркодовете от магазините (данни на КЗП) — име и цени по вериги за хиляди продукти, обновявани 3 пъти дневно",
+        "🌍 Световни бази: Open Food Facts, Open Products Facts, Open Beauty Facts, Open Pet Food Facts, UPCitemdb и Open GTIN",
+        "🌐 „Търси в интернет“ — отваря търсене по баркода, ако продуктът липсва навсякъде",
+        "Когато продуктът е намерен, виждаш и цените му в магазините"
+      ]
+    },
     {
       "code": 46,
       "date": "2026-11-05",
