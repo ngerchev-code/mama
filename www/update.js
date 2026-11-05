@@ -26,8 +26,12 @@ async function latestRelease() {
 function UPD() { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater; }
 async function nativeBuild() { try { const i = await window.Capacitor.Plugins.App.getInfo(); return +i.build || 0; } catch (e) { return 0; } }
 /* Прилага изтегленото обновление веднага, когато е удобно (на началния екран, без отворени прозорци), иначе при връщане в приложението */
+let __applying = null;
 function applyLive(up, id) {
-  const ok = () => current === 'home' && !popOpen && !(typeof sheetOpen === 'function' && sheetOpen()) && !document.querySelector('.onb, .tour, #ow, #call');
+  if (__applying === id) return; __applying = id;
+  // удобен момент: началният екран без отворени прозорци, или 45 сек. без докосване на какъвто и да е екран (без въвеждане на текст)
+  const calm = () => !popOpen && !(typeof sheetOpen === 'function' && sheetOpen()) && !document.querySelector('.onb, .tour, #ow, #call, #srch, #drw') && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName));
+  const ok = () => calm() && (current === 'home' || Date.now() - (window.__lastTouch || 0) > 45000);
   const doIt = () => { toast('✨ Обновяване на MAMA…'); setTimeout(() => up.set({ id }).catch(() => {}), 1200); };
   if (ok()) return doIt();
   let n = 0; const t = setInterval(() => { n++; if (ok()) { clearInterval(t); doIt(); } else if (n > 120) clearInterval(t); }, 5000);
@@ -108,6 +112,18 @@ async function checkUpdates(manual) {
     el.querySelector('#updBtn').onclick = () => checkUpdates(true);
   };
 })();
+
+/* Редовна проверка: на всеки 10 мин., докато MAMA е отворено, и при всяко връщане в приложението (ако са минали 3+ мин.).
+   Така ново обновление стига до всички за минути, без нищо да се инсталира. */
+let __lastCheck = Date.now();
+document.addEventListener('pointerdown', () => { window.__lastTouch = Date.now(); }, true);
+async function quietCheck() {
+  if (!NATIVE || document.hidden) return;
+  __lastCheck = Date.now();
+  try { const me = BUILD || await myBuild(); const rel = await latestRelease(); if (me && rel > me) await liveUpdate(me); } catch (e) {}
+}
+setInterval(quietCheck, 10 * 60e3);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - __lastCheck > 3 * 60e3) setTimeout(quietCheck, 1500); });
 
 document.addEventListener('DOMContentLoaded', () => {
   myBuild();
