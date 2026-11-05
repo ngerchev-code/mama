@@ -649,3 +649,19 @@ nav.bottom .badge.chatb { background: #be123c; }
 .fit-bridge .fit-go { background: #fff; color: #4c1d95; font-weight: 800; border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
 /* лентата и броячът остават горе при скрол */
 body { height: auto; min-height: 100%; }
+
+/* ─── дневник на храненето ─── */
+.dy-hero { color: #fff; background: linear-gradient(135deg, #0e5f4a, #1e3a8a); border: 0; }
+.dy-hero .btn.tonal { background: rgba(0,0,0,.25); color: #fff; border: 1px solid rgba(255,255,255,.5); min-width: 44px; font-size: 20px; }
+.dy-hero .btn.tonal[disabled] { opacity: .35; }
+.dy-card { color: #fff; background: linear-gradient(120deg, #0e5f4a, #155e75 60%, #1e3a8a); border: 0; cursor: pointer; }
+.dy-card .dy-plus { background: #fff; color: #0e5f4a; font-weight: 800; font-size: 22px; min-width: 44px; border-radius: 999px; }
+.dy-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; height: 90px; margin-top: 8px; }
+.dy-bar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; cursor: pointer; }
+.dy-bar span { width: 70%; min-height: 4px; background: #0e7a5c; border-radius: 6px 6px 2px 2px; }
+.dy-bar i { font-style: normal; font-size: 12px; color: var(--muted); }
+.dy-bar.on span { background: #1d4ed8; } .dy-bar.on i { color: var(--text); font-weight: 700; }
+.dy-score { display: flex; gap: 14px; align-items: center; color: #fff; background: linear-gradient(135deg, #0e5f4a, #1e3a8a); border-radius: 18px; padding: 14px; }
+.dy-tbl { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+.dy-tbl th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 4px; }
+.dy-tbl td { padding: 7px 4px; border-top: 1px solid var(--line, rgba(127,127,127,.2)); vertical-align: top; }
