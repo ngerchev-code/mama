@@ -5,7 +5,7 @@
   const Q = [], MAX_AUTO = 3, GAP = 20000;
   document.addEventListener('pointerdown', () => { lastTap = Date.now(); }, true);
   const base = popup, baseClose = closePopup;
-  const busy = () => popOpen || document.querySelector('.sheet.open, #ow, #call, .onb, .tour');
+  const busy = () => popOpen || document.querySelector('.sheet.open, #sheet.open, #ow, #call, .onb, .tour, .scan-ov, #srch, #drw');
   closePopup = function (instant) { const was = popOpen; baseClose.apply(this, arguments); if (was) { lastClose = Date.now(); pump(); } };
   popup = function (opts) {
     const user = Date.now() - lastTap < 2000;

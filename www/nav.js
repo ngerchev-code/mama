@@ -94,13 +94,13 @@
     let img; try { img = await loadImg(url); } catch (e) { return null; }
     try {
       if ('BarcodeDetector' in window) {
-        const det = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+        const det = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code', 'data_matrix'] });
         const r = await det.detect(img); if (r && r[0] && r[0].rawValue) return r[0].rawValue;
       }
     } catch (e) {}
     if (!window.ZXing) return null;
     const hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128]);
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
     for (const max of [1400, 900, 2000]) {
       try {
@@ -143,13 +143,6 @@
     return true;
   }
   /* сканиране на живо: първо разрешение за камерата; ако видеото не тръгне — снимка с родната камера */
-  const baseStart = startScan;
-  startScan = async function () {
-    if (!(await camPermission())) return;
-    try { const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } }); st.getTracks().forEach(t => t.stop()); }
-    catch (e) { toast('Снимай баркода отблизо'); return photoProduct(true); }
-    return baseStart.apply(this, arguments);
-  };
   async function photoProduct(barcodeOnly) {
     if (!(await camPermission())) return;
     const f = await takePhoto(); if (!f) return;
@@ -160,7 +153,7 @@
       const bar = p => { const e = document.getElementById('phBar'); if (e) e.style.width = Math.round(p * 100) + '%'; };
       // 1) баркод от снимката
       const code = await decodeBarcode(url);
-      if (code) { bar(1); closeSheet(); return lookup(code); }
+      if (code) { bar(1); closeSheet(); return (window.handleScan || lookup)(code); }
       if (barcodeOnly) st('Не виждам баркод — чета етикета…');
       // 2) етикет: разчитане на текста
       st('Няма баркод — чета етикета…'); bar(.1);
@@ -222,5 +215,6 @@
   const bb = document.getElementById('backBtn'); if (bb) bb.onclick = () => back();
   const bSO = sheetOpen; sheetOpen = function () { return !!dr || bSO.apply(this, arguments); };
   const bGo = go; go = function (name) { if (!name) return; return bGo.apply(this, arguments); };
+  Object.assign(window, { mamaDecode: decodeBarcode, mamaTakePhoto: takePhoto, mamaCamPerm: camPermission, mamaPseudo: pseudoProduct, mamaPickName: pickName, mamaIngr: ingredientsFrom, mamaCamDenied: camDenied });
   window.openDrawer = openDrawer; window.scanChooser = scanChooser; window.photoProduct = photoProduct;
 })();

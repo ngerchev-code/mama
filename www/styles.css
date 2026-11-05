@@ -763,3 +763,13 @@ body[data-bg="clean"]::after { background-image: none; }
 .bg-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .bg-pick button { height: 64px; border-radius: 14px; border: 2px solid transparent; font: inherit; font-size: 12.5px; font-weight: 700; color: #10201a; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
 .bg-pick button.on { border-color: #0e7a5c; box-shadow: 0 0 0 2px #0e7a5c; }
+
+/* ─── скенер 2: бутони върху камерата ─── */
+.scan-ctl { position: absolute; left: 0; right: 0; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; align-items: flex-end; gap: 22px; }
+.scan-ctl button { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 78px; padding: 10px 0; border-radius: 18px; border: 1px solid rgba(255,255,255,.55); background: rgba(0,0,0,.45); color: #fff; font: inherit; font-size: 13px; font-weight: 700; }
+.scan-ctl button span { font-size: 24px; }
+.scan-ctl button.big { width: 96px; padding: 14px 0; background: #0e7a5c; border-color: #fff; font-size: 14px; }
+.scan-ctl button.big span { font-size: 30px; }
+.scan-ctl button.on { background: #f59e0b; color: #111; }
+.scan-x { position: absolute; top: calc(18px + env(safe-area-inset-top, 0px)); right: 16px; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 20px; }
+.scan-ov .scan-top { padding: 0 70px; }
