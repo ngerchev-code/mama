@@ -480,6 +480,74 @@ def build_news(out: Path, prev: Path | None):
     write_json(out / "v1" / "news.json", {"items": kept})
 
 
+def valid_ean(c: str) -> bool:
+    if len(c) not in (8, 12, 13, 14) or not c.isdigit() or set(c) == {"0"}:
+        return False
+    d = [int(x) for x in c]
+    chk = d.pop()
+    tot = sum(x * (3 if i % 2 == 0 else 1) for i, x in enumerate(reversed(d)))
+    return (10 - tot % 10) % 10 == chk
+
+
+def build_ean(zpath: Path, out: Path):
+    """Баркод → име, категория и цени по вериги — от колоната „код на продукта“ (където веригите подават EAN)."""
+    idx: dict[str, list] = {}
+    stats: dict[str, list[int]] = {}
+    with zipfile.ZipFile(zpath) as z:
+        for info in z.infolist():
+            fname = member_name(info)
+            if info.is_dir() or not fname.lower().endswith(".csv"):
+                continue
+            cid, cname = chain_of(fname)
+            try:
+                text = decode(z.read(info))
+            except (zipfile.BadZipFile, OSError):
+                continue
+            first = text.split("\n", 1)[0]
+            delim = max([",", ";", "\t"], key=first.count)
+            reader = csv.reader(io.StringIO(text), delimiter=delim)
+            try:
+                header = next(reader)
+            except StopIteration:
+                continue
+            c = columns(header)
+            if not {"name", "retail", "code"} <= c.keys():
+                continue
+            st = stats.setdefault(cid, [0, 0, cname])
+            for rec in reader:
+                g = lambda k: rec[c[k]] if k in c and c[k] < len(rec) else ""
+                st[0] += 1
+                code = re.sub(r"\D", "", g("code"))
+                if len(code) == 14 and code.startswith("0"):
+                    code = code[1:]
+                if not valid_ean(code):
+                    continue
+                st[1] += 1
+                name = re.sub(r"\s+", " ", g("name")).strip()
+                retail, promo = num(g("retail")), num(g("promo"))
+                price = promo if (promo is not None and (retail is None or promo < retail)) else retail
+                if not name or price is None:
+                    continue
+                m = re.match(r"\s*(\d+)", g("cat") or "")
+                cat = int(m.group(1)) if m else 0
+                e = idx.setdefault(code, [name, cat, {}])
+                if len(name) > len(e[0]):
+                    e[0] = name
+                prev = e[2].get(cid)
+                if prev is None or price < prev:
+                    e[2][cid] = price
+    shards: dict[str, dict] = {}
+    for code, (name, cat, ch) in idx.items():
+        shards.setdefault(code[:4], {})[code] = [name, cat, sorted([[k, r2(v)] for k, v in ch.items()], key=lambda x: x[1])]
+    for pre, obj in shards.items():
+        write_json(out / "v1" / "ean" / f"{pre}.json", obj)
+    write_json(out / "v1" / "ean" / "stats.json", {"products": len(idx), "shards": len(shards),
+               "chains": {k: {"name": v[2], "rows": v[0], "ean": v[1]} for k, v in stats.items()}})
+    log(f"Баркодове: {len(idx)} продукта с EAN в {len(shards)} файла")
+    for k, v in sorted(stats.items(), key=lambda x: -x[1][1]):
+        log(f"  {v[2]}: {v[1]}/{v[0]} реда с валиден EAN")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--zips", type=Path, default=Path(".cache/zips"))
@@ -507,6 +575,10 @@ def main():
     log(f"Най-нови данни: {latest}")
     build_today(a.zips, days, latest, a.out, ekatte)
     build_history(a.prev, a.zips, sorted(days), a.out)
+    try:
+        build_ean(a.zips / f"{latest.isoformat()}.zip", a.out)
+    except Exception as e:  # баркодовете са допълнение — не спират цените
+        log(f"  ⚠ баркодове: {e}")
     if not a.no_net:
         build_news(a.out, a.prev)
     elif a.prev and (a.prev / "v1" / "news.json").exists():
