@@ -54,7 +54,7 @@ async function liveUpdate(me) {
   } catch (e) { return false; }
 }
 async function changelog() {
-  try { const r = await fetch(UPD_URL + '?t=' + Math.floor(Date.now() / 600000), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) { /* без интернет */ }
+  try { const r = await fetch(UPD_URL + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) { /* без интернет */ }
   return null;
 }
 function newsList(cl, from, to) {
@@ -115,15 +115,22 @@ async function checkUpdates(manual) {
 
 /* Редовна проверка: на всеки 10 мин., докато MAMA е отворено, и при всяко връщане в приложението (ако са минали 3+ мин.).
    Така ново обновление стига до всички за минути, без нищо да се инсталира. */
-let __lastCheck = Date.now();
+let __lastCheck = 0;
 document.addEventListener('pointerdown', () => { window.__lastTouch = Date.now(); }, true);
+/* Бърза проверка: евтиният changelog (без лимит) на всеки 2 мин. и при всяко връщане в MAMA;
+   GitHub API се пита само когато има по-нов номер. Обновлението стига до телефона за 2–5 минути след публикуване. */
 async function quietCheck() {
-  if (!NATIVE || document.hidden) return;
+  if (!NATIVE || document.hidden || Date.now() - __lastCheck < 60e3) return;
   __lastCheck = Date.now();
-  try { const me = BUILD || await myBuild(); const rel = await latestRelease(); if (me && rel > me) await liveUpdate(me); } catch (e) {}
+  try {
+    const me = BUILD || await myBuild(); if (!me) return;
+    const cl = await changelog(); if (!cl || !(cl.latest > me)) return;
+    const rel = await latestRelease(); if (rel > me) await liveUpdate(me);
+  } catch (e) {}
 }
-setInterval(quietCheck, 10 * 60e3);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - __lastCheck > 3 * 60e3) setTimeout(quietCheck, 1500); });
+setInterval(quietCheck, 2 * 60e3);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(quietCheck, 1200); });
+setTimeout(quietCheck, 20e3);
 
 document.addEventListener('DOMContentLoaded', () => {
   myBuild();

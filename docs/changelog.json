@@ -1,7 +1,15 @@
 {
-  "latest": 42,
+  "latest": 43,
   "apk": "https://github.com/ngerchev-code/mama/releases/latest/download/MAMA.apk",
   "versions": [
+    {
+      "code": 43,
+      "date": "2026-11-05",
+      "title": "Още по-бързи обновления",
+      "items": [
+        "⚡ MAMA проверява за нова версия на всеки 2 минути и при всяко връщане в приложението — новото стига до телефона за минути"
+      ]
+    },
     {
       "code": 42,
       "date": "2026-11-05",
