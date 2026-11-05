@@ -513,7 +513,7 @@ def build_ean(zpath: Path, out: Path):
             c = columns(header)
             if not {"name", "retail", "code"} <= c.keys():
                 continue
-            st = stats.setdefault(cid, [0, 0, cname])
+            st = stats.setdefault(cname, [0, 0, cname])
             for rec in reader:
                 g = lambda k: rec[c[k]] if k in c and c[k] < len(rec) else ""
                 st[0] += 1
@@ -533,9 +533,9 @@ def build_ean(zpath: Path, out: Path):
                 e = idx.setdefault(code, [name, cat, {}])
                 if len(name) > len(e[0]):
                     e[0] = name
-                prev = e[2].get(cid)
+                prev = e[2].get(cname)
                 if prev is None or price < prev:
-                    e[2][cid] = price
+                    e[2][cname] = price
     shards: dict[str, dict] = {}
     for code, (name, cat, ch) in idx.items():
         shards.setdefault(code[:4], {})[code] = [name, cat, sorted([[k, r2(v)] for k, v in ch.items()], key=lambda x: x[1])]
