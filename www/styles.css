@@ -718,3 +718,48 @@ nav.bottom .nav-scan { position: relative; color: var(--text); font-weight: 700;
 .scn-bar { height: 6px; border-radius: 6px; background: var(--surface-2, #eef2f0); overflow: hidden; margin-top: 8px; } .scn-bar i { display: block; height: 100%; width: 0; background: #0e7a5c; transition: width .3s; }
 .drw-panel { background: #f7fbf9; }
 @media (prefers-color-scheme: dark) { .drw-panel { background: #111a16; } }
+
+/* ─── фонове (избор в Настройки → Фон) ─── */
+body[data-bg]::before, body[data-bg]::after { transition: opacity .3s; }
+/* Утро — нов фон по подразбиране: мента, небе и праскова, фина мрежа от точки */
+body[data-bg="morning"]::before { background:
+    radial-gradient(70vmax 55vmax at 100% -5%, rgba(125,211,252,.45), transparent 60%),
+    radial-gradient(60vmax 50vmax at -10% 30%, rgba(110,231,183,.40), transparent 60%),
+    radial-gradient(65vmax 55vmax at 105% 95%, rgba(253,186,116,.38), transparent 60%),
+    linear-gradient(170deg, #f1fbf7 0%, #edf6fd 50%, #fff5ec 100%); }
+body[data-bg="morning"]::after { background-image: radial-gradient(rgba(14,122,92,.22) 1.2px, transparent 1.3px); background-size: 22px 22px; opacity: .5; }
+/* Море */
+body[data-bg="sea"]::before { background:
+    radial-gradient(70vmax 55vmax at 100% 0%, rgba(56,189,248,.45), transparent 60%),
+    radial-gradient(60vmax 50vmax at 0% 100%, rgba(45,212,191,.40), transparent 60%),
+    linear-gradient(180deg, #eef8fd 0%, #e6f4f8 55%, #ecfbf6 100%); }
+body[data-bg="sea"]::after { background-image: repeating-linear-gradient(160deg, rgba(14,116,144,.07) 0 2px, transparent 2px 26px); opacity: 1; }
+/* Залез */
+body[data-bg="sunset"]::before { background:
+    radial-gradient(70vmax 55vmax at 100% 0%, rgba(251,146,60,.42), transparent 60%),
+    radial-gradient(60vmax 50vmax at 0% 60%, rgba(244,114,182,.32), transparent 60%),
+    radial-gradient(60vmax 50vmax at 100% 100%, rgba(250,204,21,.30), transparent 60%),
+    linear-gradient(180deg, #fff7f0 0%, #fff1f3 55%, #fffbea 100%); }
+body[data-bg="sunset"]::after { background-image: none; }
+/* Лавандула */
+body[data-bg="lavender"]::before { background:
+    radial-gradient(70vmax 55vmax at 100% 0%, rgba(167,139,250,.40), transparent 60%),
+    radial-gradient(60vmax 50vmax at 0% 80%, rgba(110,231,183,.30), transparent 60%),
+    linear-gradient(180deg, #f6f3ff 0%, #f2f0fb 55%, #effaf5 100%); }
+body[data-bg="lavender"]::after { background-image: radial-gradient(rgba(109,40,217,.18) 1.2px, transparent 1.3px); background-size: 24px 24px; opacity: .5; }
+/* Чисто — без шарки */
+body[data-bg="clean"]::before { background: linear-gradient(180deg, #f6f8f7 0%, #f1f5f3 100%); }
+body[data-bg="clean"]::after { background-image: none; }
+/* „Класически“ = предишният фон със зеленчуците (без промяна) */
+@media (prefers-color-scheme: dark) {
+  body[data-bg="morning"]::before { background: radial-gradient(70vmax 55vmax at 100% -5%, rgba(14,116,144,.35), transparent 60%), radial-gradient(60vmax 50vmax at -10% 30%, rgba(16,185,129,.25), transparent 60%), radial-gradient(65vmax 55vmax at 105% 95%, rgba(234,88,12,.18), transparent 60%), linear-gradient(170deg, #07130f 0%, #0a1620 55%, #150f0b 100%); }
+  body[data-bg="morning"]::after, body[data-bg="lavender"]::after { background-image: radial-gradient(rgba(127,240,196,.16) 1.2px, transparent 1.3px); }
+  body[data-bg="sea"]::before { background: radial-gradient(70vmax 55vmax at 100% 0%, rgba(14,116,144,.40), transparent 60%), radial-gradient(60vmax 50vmax at 0% 100%, rgba(13,148,136,.30), transparent 60%), linear-gradient(180deg, #06121a 0%, #071a1c 100%); }
+  body[data-bg="sea"]::after { background-image: repeating-linear-gradient(160deg, rgba(125,211,252,.06) 0 2px, transparent 2px 26px); }
+  body[data-bg="sunset"]::before { background: radial-gradient(70vmax 55vmax at 100% 0%, rgba(234,88,12,.30), transparent 60%), radial-gradient(60vmax 50vmax at 0% 60%, rgba(190,24,93,.22), transparent 60%), linear-gradient(180deg, #160c08 0%, #170b11 100%); }
+  body[data-bg="lavender"]::before { background: radial-gradient(70vmax 55vmax at 100% 0%, rgba(109,40,217,.32), transparent 60%), radial-gradient(60vmax 50vmax at 0% 80%, rgba(16,185,129,.18), transparent 60%), linear-gradient(180deg, #0e0b18 0%, #0b1310 100%); }
+  body[data-bg="clean"]::before { background: #0e1412; }
+}
+.bg-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.bg-pick button { height: 64px; border-radius: 14px; border: 2px solid transparent; font: inherit; font-size: 12.5px; font-weight: 700; color: #10201a; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.bg-pick button.on { border-color: #0e7a5c; box-shadow: 0 0 0 2px #0e7a5c; }

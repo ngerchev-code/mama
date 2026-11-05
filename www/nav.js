@@ -86,20 +86,72 @@
     if (!m) return null;
     return m[2].split(/\n\s*\n|хранителна стойност|nutrition|годен до|най-добър/i)[0].replace(/\s+/g, ' ').trim();
   }
+  /* разпознаване на баркод от снимка: вграденият в Android детектор, после ZXing в няколко размера */
+  function loadImg(url) { return new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; }); }
   async function decodeBarcode(url) {
-    if (!window.ZXing) return null;
+    let img; try { img = await loadImg(url); } catch (e) { return null; }
     try {
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128]);
-      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-      const r = await new ZXing.BrowserMultiFormatReader(hints).decodeFromImageUrl(url);
-      return r ? r.getText() : null;
-    } catch (e) { return null; }
+      if ('BarcodeDetector' in window) {
+        const det = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+        const r = await det.detect(img); if (r && r[0] && r[0].rawValue) return r[0].rawValue;
+      }
+    } catch (e) {}
+    if (!window.ZXing) return null;
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    for (const max of [1400, 900, 2000]) {
+      try {
+        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const r = await new ZXing.BrowserMultiFormatReader(hints).decodeFromImageUrl(c.toDataURL('image/jpeg', .92));
+        if (r) return r.getText();
+      } catch (e) {}
+    }
+    return null;
   }
-  function photoProduct() {
-    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
-    inp.onchange = async () => {
-      const f = inp.files && inp.files[0]; if (!f) return;
+  const CAM = () => window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera;
+  /* снимка: родната камера на телефона (най-надеждно), иначе избор на файл */
+  async function takePhoto() {
+    const C = CAM();
+    if (NATIVE && C) {
+      try {
+        const r = await C.getPhoto({ quality: 85, width: 1800, resultType: 'dataUrl', source: 'CAMERA', correctOrientation: true, saveToGallery: false });
+        if (r && r.dataUrl) { const blob = await (await fetch(r.dataUrl)).blob(); return blob; }
+        return null;
+      } catch (e) {
+        if (/cancel/i.test(String(e && (e.message || e)))) return null;
+        if (/denied|permission/i.test(String(e && (e.message || e)))) { camDenied(); return null; }
+      }
+    }
+    return new Promise(res => {
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+      inp.onchange = () => res((inp.files && inp.files[0]) || null); inp.click();
+    });
+  }
+  function camDenied() {
+    openSheet(`<h3>📷 MAMA няма достъп до камерата</h3><div class="muted" style="margin-bottom:10px">За да сканираш, разреши камерата:</div>
+      <ol class="steps"><li>Отвори <b>Настройки</b> на телефона → <b>Приложения</b> → <b>MAMA</b></li><li><b>Разрешения</b> → <b>Камера</b> → <b>Разреши</b></li><li>Върни се в MAMA и натисни скенера отново</li></ol>
+      <button class="btn tonal block" id="cdType" style="margin-top:10px">⌨️ Въведи баркода ръчно</button>`, el => { el.querySelector('#cdType').onclick = () => { closeSheet(); go('scan'); setTimeout(() => { const q = document.getElementById('scQ'); q && q.focus(); }, 300); }; });
+  }
+  async function camPermission() {
+    const C = CAM(); if (!NATIVE || !C) return true;
+    try { let p = await C.checkPermissions(); if (p.camera !== 'granted') p = await C.requestPermissions({ permissions: ['camera'] }); if (p.camera === 'denied') { camDenied(); return false; } } catch (e) {}
+    return true;
+  }
+  /* сканиране на живо: първо разрешение за камерата; ако видеото не тръгне — снимка с родната камера */
+  const baseStart = startScan;
+  startScan = async function () {
+    if (!(await camPermission())) return;
+    try { const st = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } }); st.getTracks().forEach(t => t.stop()); }
+    catch (e) { toast('Снимай баркода отблизо'); return photoProduct(true); }
+    return baseStart.apply(this, arguments);
+  };
+  async function photoProduct(barcodeOnly) {
+    if (!(await camPermission())) return;
+    const f = await takePhoto(); if (!f) return;
+    {
       const url = URL.createObjectURL(f);
       openSheet(`<h3>📸 Разпознавам продукта…</h3><img src="${url}" alt="" class="scn-img"><div class="muted small" id="phSt">Търся баркод…</div><div class="scn-bar"><i id="phBar"></i></div>`);
       const st = t => { const e = document.getElementById('phSt'); if (e) e.textContent = t; };
@@ -107,6 +159,7 @@
       // 1) баркод от снимката
       const code = await decodeBarcode(url);
       if (code) { bar(1); closeSheet(); return lookup(code); }
+      if (barcodeOnly) st('Не виждам баркод — чета етикета…');
       // 2) етикет: разчитане на текста
       st('Няма баркод — чета етикета…'); bar(.1);
       let words = [], text = '';
@@ -124,8 +177,7 @@
       if (!list.length && name.includes(' ')) { try { list = await offSearch(name.split(' ').slice(0, 2).join(' ')); } catch (e) {} }
       bar(1);
       showPhotoResults(url, name, ingr, list);
-    };
-    inp.click();
+    }
   }
   function showPhotoResults(url, name, ingr, list) {
     openSheet(`<h3>📸 Резултат</h3><div class="row" style="gap:12px;align-items:flex-start"><img src="${url}" alt="" class="scn-thumb"><div class="grow"><div class="muted small">Разпознах:</div>
@@ -159,7 +211,7 @@
     bRS.apply(this, arguments);
     const go_ = el.querySelector('#scGo'); if (!go_ || el.querySelector('#scPh')) return;
     go_.insertAdjacentHTML('afterend', `<button class="btn block" id="scPh" style="background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.6);font-size:16px;padding:12px;margin-top:8px">📸 Снимай продукта</button>`);
-    el.querySelector('#scPh').onclick = photoProduct;
+    el.querySelector('#scPh').onclick = () => photoProduct();
   };
 
   /* „Назад“ затваря менюто */
