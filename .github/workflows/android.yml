@@ -40,7 +40,10 @@ jobs:
           cat www/build.json
           npm ci
           for f in www/*.js; do node --check "$f" || exit 1; done
+          npm i --no-save playwright@1.49.1 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+          node tools/smoke.cjs www
           sh tools/minify.sh www
+          node tools/smoke.cjs www
           echo "{\"code\": ${{ github.run_number }}, \"minNative\": $(cat android/NATIVE_VERSION)}" > update.json
           (cd www && zip -qr ../web.zip .)
           ls -la web.zip update.json
